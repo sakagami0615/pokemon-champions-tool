@@ -1,3 +1,16 @@
 .claude/settings.local.json
 
+.superpowers
+docs/.superpowers
+
 @tmp
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+
+# Docker
+.dockerignore
