@@ -11,7 +11,7 @@ export default function Header({ dark, onToggleDark, page, onChangePage }: Props
   return (
     <header className="border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
       <div className="flex items-center gap-4">
-        <span className="font-bold text-lg">🎮 ポケチャン支援ツール</span>
+        <span className="font-bold text-lg">Pokemon Champions Tool</span>
         <nav className="flex gap-2">
           <button
             onClick={() => onChangePage('prediction')}
