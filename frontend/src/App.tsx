@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useDarkMode } from './hooks/useDarkMode'
-import PredictionPage from './pages/PredictionPage'
-import PartyPage from './pages/PartyPage'
-import Header from './components/Header'
+import { useDarkMode } from './presentation/hooks/useDarkMode'
+import PredictionPage from './presentation/pages/PredictionPage'
+import PartyPage from './presentation/pages/PartyPage'
+import Header from './presentation/components/Header'
 
 type Page = 'prediction' | 'party'
 

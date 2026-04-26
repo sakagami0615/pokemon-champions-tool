@@ -1,6 +1,5 @@
-// frontend/src/components/PatternCard.tsx
 import PokemonCard from './PokemonCard'
-import type { PredictionPattern, UsageEntry } from '../types'
+import type { PredictionPattern, UsageEntry } from '../../domain/entities'
 
 interface Props {
   pattern: PredictionPattern

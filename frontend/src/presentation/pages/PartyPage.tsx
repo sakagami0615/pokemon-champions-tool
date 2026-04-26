@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import PokemonSlot from '../components/PokemonSlot'
-import { getParties, createParty, updateParty, deleteParty, getPokemonNames } from '../api/client'
-import type { Party } from '../types'
+import { getParties, createParty, updateParty, deleteParty, getPokemonNames } from '../../infrastructure/api/client'
+import type { Party } from '../../domain/entities'
 
 export default function PartyPage() {
   const [parties, setParties] = useState<Party[]>([])

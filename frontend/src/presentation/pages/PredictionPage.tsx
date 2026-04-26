@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import PartyInput from '../components/PartyInput'
 import PredictionResultView from '../components/PredictionResult'
-import { predict, getParties, setLastUsedParty, getPokemonNames } from '../api/client'
-import type { PredictionResult, Party, PartiesData } from '../types'
+import { predict, getParties, setLastUsedParty, getPokemonNames } from '../../infrastructure/api/client'
+import type { PredictionResult, Party, PartiesData } from '../../domain/entities'
 
 export default function PredictionPage() {
   const [opponentParty, setOpponentParty] = useState<string[]>(Array(6).fill(''))
@@ -77,7 +77,7 @@ export default function PredictionPage() {
         disabled={loading}
         className="w-full py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold disabled:opacity-50"
       >
-        {loading ? '予想中...' : '🔮 選出予想する'}
+        {loading ? '予想中...' : '選出予想する'}
       </button>
 
       {result && <PredictionResultView result={result} />}

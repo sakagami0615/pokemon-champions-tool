@@ -1,6 +1,5 @@
-// frontend/src/components/PredictionResult.tsx
 import PatternCard from './PatternCard'
-import type { PredictionResult, UsageEntry } from '../types'
+import type { PredictionResult, UsageEntry } from '../../domain/entities'
 
 interface Props {
   result: PredictionResult

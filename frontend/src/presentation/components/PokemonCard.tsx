@@ -1,5 +1,4 @@
-// frontend/src/components/PokemonCard.tsx
-import type { UsageEntry } from '../types'
+import type { UsageEntry } from '../../domain/entities'
 
 interface Props {
   name: string
