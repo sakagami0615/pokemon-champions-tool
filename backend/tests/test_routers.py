@@ -63,8 +63,7 @@ async def test_recognize_returns_400_on_invalid_image():
     assert resp.status_code == 400
 
 
-@pytest.mark.asyncio
-async def test_do_fetch_calls_scraper_methods():
+def test_do_fetch_calls_scraper_methods():
     """_do_fetch が fetch_pokemon_list と fetch_usage_ranking を呼び出すこと"""
     mock_scraper = MagicMock()
     mock_scraper.fetch_pokemon_list.return_value = []
@@ -89,16 +88,14 @@ async def test_fetch_data_endpoint_returns_started():
     assert resp.json()["status"] == "started"
 
 
-@pytest.mark.asyncio
-async def test_do_fetch_handles_scraper_init_exception():
+def test_do_fetch_handles_scraper_init_exception():
     """GameWithScraper の初期化が失敗しても _do_fetch がクラッシュしないこと"""
     with patch("routers.data.GameWithScraper", side_effect=Exception("init error")):
         from routers.data import _do_fetch
         _do_fetch()  # 例外が伝播しないこと
 
 
-@pytest.mark.asyncio
-async def test_do_fetch_handles_scraper_exception():
+def test_do_fetch_handles_scraper_exception():
     """fetch_pokemon_listが例外を投げても fetch_usage_ranking が呼ばれ、クラッシュしないこと"""
     mock_scraper = MagicMock()
     mock_scraper.fetch_pokemon_list.side_effect = Exception("Network error")
