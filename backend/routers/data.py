@@ -20,7 +20,11 @@ def fetch_data(background_tasks: BackgroundTasks):
 
 
 def _do_fetch() -> None:
-    scraper = GameWithScraper(sprites_dir=_sprites_dir)
+    try:
+        scraper = GameWithScraper(sprites_dir=_sprites_dir)
+    except Exception:
+        _logger.exception("GameWithScraper の初期化に失敗しました")
+        return
     _fetch_and_save_pokemon_list(scraper)
     _fetch_and_save_usage_data(scraper)
 
@@ -55,11 +59,13 @@ def _fetch_and_save_usage_data(scraper: GameWithScraper) -> None:
         if not entries:
             _logger.warning("fetch_usage_ranking: 有効な使用率データが取得できませんでした。")
             return
+        now = datetime.now().isoformat()
+        _logger.warning("season と regulation はスクレイパー未対応のため 0/'') のままです。HTMLセレクタ実装後に修正が必要です。")
         usage_data = UsageData(
-            collected_at=datetime.now().isoformat(),
+            collected_at=now,
             season=0,
             regulation="",
-            source_updated_at=datetime.now().isoformat(),
+            source_updated_at=now,
             pokemon=entries,
         )
         _manager.save_usage_data(usage_data)

@@ -80,12 +80,23 @@ async def test_do_fetch_calls_scraper_methods():
 
 
 @pytest.mark.asyncio
+async def test_fetch_data_endpoint_returns_started():
+    """POST /api/data/fetch が {"status": "started"} を返すこと"""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.post("/api/data/fetch")
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "started"
+
+
+@pytest.mark.asyncio
 async def test_do_fetch_handles_scraper_exception():
-    """スクレイパーが例外を投げても _do_fetch がクラッシュしないこと"""
+    """fetch_pokemon_listが例外を投げても fetch_usage_ranking が呼ばれ、クラッシュしないこと"""
     mock_scraper = MagicMock()
     mock_scraper.fetch_pokemon_list.side_effect = Exception("Network error")
-    mock_scraper.fetch_usage_ranking.side_effect = Exception("Network error")
+    mock_scraper.fetch_usage_ranking.return_value = []  # usage側は正常に動く
 
     with patch("routers.data.GameWithScraper", return_value=mock_scraper):
         from routers.data import _do_fetch
-        _do_fetch()  # 例外が伝播しないこと（クラッシュしない）
+        _do_fetch()
+
+    mock_scraper.fetch_usage_ranking.assert_called_once()
