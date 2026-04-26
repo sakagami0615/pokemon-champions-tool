@@ -60,7 +60,7 @@ def _fetch_and_save_usage_data(scraper: GameWithScraper) -> None:
             _logger.warning("fetch_usage_ranking: 有効な使用率データが取得できませんでした。")
             return
         now = datetime.now().isoformat()
-        _logger.warning("season と regulation はスクレイパー未対応のため 0/'') のままです。HTMLセレクタ実装後に修正が必要です。")
+        _logger.info("season と regulation はスクレイパー未対応のため 0/\"\" のままです。HTMLセレクタ実装後に修正が必要です。")
         usage_data = UsageData(
             collected_at=now,
             season=0,

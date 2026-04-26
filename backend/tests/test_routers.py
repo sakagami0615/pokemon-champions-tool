@@ -82,10 +82,19 @@ async def test_do_fetch_calls_scraper_methods():
 @pytest.mark.asyncio
 async def test_fetch_data_endpoint_returns_started():
     """POST /api/data/fetch が {"status": "started"} を返すこと"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        resp = await client.post("/api/data/fetch")
+    with patch("routers.data._do_fetch"):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.post("/api/data/fetch")
     assert resp.status_code == 200
     assert resp.json()["status"] == "started"
+
+
+@pytest.mark.asyncio
+async def test_do_fetch_handles_scraper_init_exception():
+    """GameWithScraper の初期化が失敗しても _do_fetch がクラッシュしないこと"""
+    with patch("routers.data.GameWithScraper", side_effect=Exception("init error")):
+        from routers.data import _do_fetch
+        _do_fetch()  # 例外が伝播しないこと
 
 
 @pytest.mark.asyncio
