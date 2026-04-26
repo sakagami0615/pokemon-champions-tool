@@ -47,3 +47,17 @@ async def test_recognize_returns_six_names():
             )
     assert resp.status_code == 200
     assert len(resp.json()["names"]) == 6
+
+
+@pytest.mark.asyncio
+async def test_recognize_returns_400_on_invalid_image():
+    """無効な画像バイト列を送った場合、APIが400を返すこと"""
+    from services.image_recognition import InvalidImageError
+    with patch("routers.recognition.recognizer") as mock_rec:
+        mock_rec.recognize_from_bytes.side_effect = InvalidImageError("bad image")
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.post(
+                "/api/recognize",
+                files={"file": ("bad.png", b"not an image", "image/png")},
+            )
+    assert resp.status_code == 400
