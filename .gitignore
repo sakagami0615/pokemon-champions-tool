@@ -1,3 +1,53 @@
 .claude/settings.local.json
+.codex
+
+.superpowers
+docs/superpowers/
+
+# Environment variables - keep .env.example but not actual env files
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# UV lock file (generated, not versioned)
+backend/uv.lock
+
+# Backend runtime data (UI-generated, not version controlled)
+backend/data/parties.json
+backend/data/pokemon_list.json
+backend/data/usage_rates/
+backend/data/sprites/
+
+# Frontend
+frontend/node_modules
+frontend/dist
+frontend/dist-ssr
+frontend/*.local
+frontend/logs
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 @tmp
