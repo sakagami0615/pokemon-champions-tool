@@ -1,5 +1,8 @@
 .claude/settings.local.json
 
+# Environment variables - keep .env.example but not .env
+.env
+
 .superpowers
 docs/superpowers/
 
