@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from dataclasses import dataclass
 from pathlib import Path
+from fastapi import HTTPException
 
 
 @dataclass
@@ -26,10 +27,6 @@ class ImageRecognizer:
         return templates
 
     def recognize(self, image: np.ndarray) -> RecognitionResult:
-        """
-        画像中からテンプレートマッチングで上位 top_n 体のポケモンを検出する。
-        見つかったポケモンが top_n 未満の場合は空文字で埋める。
-        """
         matches: list[tuple[str, float, tuple]] = []
 
         for name, template in self.templates.items():
@@ -54,6 +51,10 @@ class ImageRecognizer:
         return RecognitionResult(names=names, confidences=confidences)
 
     def recognize_from_bytes(self, image_bytes: bytes) -> RecognitionResult:
+        if not image_bytes:
+            raise HTTPException(status_code=400, detail="無効な画像ファイルです。PNG または JPEG 形式の画像をアップロードしてください。")
         arr = np.frombuffer(image_bytes, np.uint8)
         image = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+        if image is None:
+            raise HTTPException(status_code=400, detail="無効な画像ファイルです。PNG または JPEG 形式の画像をアップロードしてください。")
         return self.recognize(image)

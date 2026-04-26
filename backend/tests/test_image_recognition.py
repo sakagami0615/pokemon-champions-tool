@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 import cv2
 from pathlib import Path
+from fastapi import HTTPException
 from services.image_recognition import ImageRecognizer, RecognitionResult
 
 
@@ -48,3 +49,19 @@ def test_recognize_identifies_correct_pokemon(sprites_dir):
     result = recognizer.recognize(bg)
 
     assert result.names[0] == "リザードン"
+
+
+def test_recognize_from_bytes_raises_on_invalid_image(sprites_dir):
+    """無効なバイト列を渡した場合、400エラーが発生すること"""
+    recognizer = ImageRecognizer(sprites_dir=sprites_dir)
+    with pytest.raises(HTTPException) as exc_info:
+        recognizer.recognize_from_bytes(b"this is not an image")
+    assert exc_info.value.status_code == 400
+
+
+def test_recognize_from_bytes_raises_on_empty_bytes(sprites_dir):
+    """空のバイト列を渡した場合、400エラーが発生すること"""
+    recognizer = ImageRecognizer(sprites_dir=sprites_dir)
+    with pytest.raises(HTTPException) as exc_info:
+        recognizer.recognize_from_bytes(b"")
+    assert exc_info.value.status_code == 400
