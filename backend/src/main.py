@@ -18,7 +18,7 @@ app.include_router(recognition.router)
 app.include_router(prediction.router)
 app.include_router(party.router)
 
-sprites_dir = Path(__file__).parent / "data" / "sprites"
+sprites_dir = Path(__file__).parent.parent / "data" / "sprites"
 sprites_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/sprites", StaticFiles(directory=str(sprites_dir)), name="sprites")
 

@@ -8,7 +8,7 @@ from models.party import PartiesData, Party
 
 
 class DataManager:
-    def __init__(self, data_dir: Path | str = Path(__file__).parent.parent / "data"):
+    def __init__(self, data_dir: Path | str = Path(__file__).parent.parent.parent / "data"):
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         (self.data_dir / "sprites").mkdir(exist_ok=True)

@@ -101,6 +101,7 @@
 |---|---|
 | フロントエンド | React (Vite) + Tailwind CSS |
 | バックエンド | Python + FastAPI |
+| パッケージ管理 | UV |
 | 画像認識 | OpenCV (テンプレートマッチング) |
 | スクレイピング | requests + BeautifulSoup |
 | AI選出予想 | Claude API (claude-sonnet-4-6) |
@@ -109,11 +110,23 @@
 ### 起動方法
 
 ```bash
-# バックエンド
-uvicorn main:app --reload
+# Docker Compose で起動（推奨）
+docker compose up
 
-# フロントエンド
+# バックエンド単体（ローカル / UV使用）
+cd backend
+uv run uvicorn main:app --app-dir src --reload
+
+# フロントエンド単体（ローカル）
+cd frontend
 npm run dev
+```
+
+### テスト実行
+
+```bash
+# Docker コンテナ内で実行
+docker compose run --rm backend pytest
 ```
 
 ### デプロイ
@@ -124,28 +137,44 @@ npm run dev
 
 ### バックエンド
 
-クリーンアーキテクチャを採用。
+クリーンアーキテクチャを採用。ソースコードは `src/` 配下に、データは `data/` 配下に分離する。
 
 ```
 backend/
-├── main.py                  # FastAPI エントリーポイント
-├── routers/
-│   ├── recognition.py       # 画像認識エンドポイント
-│   ├── prediction.py        # 選出予想エンドポイント
-│   ├── party.py             # 自分パーティ CRUD
-│   └── data.py              # データ取得トリガー
-├── services/
-│   ├── image_recognition.py # OpenCV テンプレートマッチング
-│   ├── scraper.py           # GameWith スクレイピング
-│   ├── ai_predictor.py      # Claude API 呼び出し
-│   └── data_manager.py      # JSON ファイル読み書き
-└── data/
-    ├── sprites/             # ポケモンスプライト画像
-    ├── pokemon_list.json    # 内定ポケモン一覧
-    ├── usage_rates/         # 使用率データ（日付ごと）
-    │   └── YYYY-MM-DD.json
-    └── parties.json         # 自分のパーティ登録データ
+├── src/          # ソースコード
+│   ├── main.py              # FastAPI エントリーポイント
+│   ├── routers/
+│   │   ├── recognition.py   # 画像認識エンドポイント
+│   │   ├── prediction.py    # 選出予想エンドポイント
+│   │   ├── party.py         # 自分パーティ CRUD
+│   │   └── data.py          # データ取得トリガー
+│   ├── services/
+│   │   ├── image_recognition.py  # OpenCV テンプレートマッチング
+│   │   ├── scraper.py            # GameWith スクレイピング
+│   │   ├── ai_predictor.py       # Claude API 呼び出し
+│   │   └── data_manager.py       # JSON ファイル読み書き
+│   ├── models/
+│   │   ├── pokemon.py       # ポケモン関連モデル
+│   │   └── party.py         # パーティ関連モデル
+│   └── tests/               # テストコード
+│       ├── conftest.py
+│       ├── test_ai_predictor.py
+│       ├── test_data_manager.py
+│       ├── test_image_recognition.py
+│       ├── test_models.py
+│       ├── test_routers.py
+│       └── test_scraper.py
+├── data/                    # 永続化データ（バージョン管理外）
+│   ├── sprites/             # ポケモンスプライト画像
+│   ├── pokemon_list.json    # 内定ポケモン一覧
+│   ├── usage_rates/         # 使用率データ（日付ごと）
+│   │   └── YYYY-MM-DD.json
+│   └── parties.json         # 自分のパーティ登録データ
+├── pyproject.toml           # UV パッケージ管理
+└── Dockerfile
 ```
+
+パッケージ管理には UV を使用する。依存関係は `pyproject.toml` で管理し、開発依存（pytest 等）は `[dependency-groups] dev` に分離する。
 
 ### フロントエンド
 
@@ -189,6 +218,12 @@ frontend/src/
 | `presentation/` | React コンポーネント・ページ・UI フック | domain, infrastructure |
 
 将来的に UseCases を導入する場合は `application/useCases/` を追加する。
+
+#### ファイル管理方針
+
+- `.gitignore` はリポジトリ最上位の `.gitignore` で一元管理する
+- `.dockerignore` は Docker ビルドコンテキストが `./frontend` であるため `frontend/.dockerignore` に配置する（ルートへの移動は不可）
+- `public/` フォルダは使用しない（デフォルトの `vite.svg` は不要なため削除済み）
 
 ## データ設計
 
