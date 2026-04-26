@@ -1,7 +1,7 @@
 .claude/settings.local.json
 
 .superpowers
-docs/.superpowers
+docs/superpowers/
 
 @tmp
 
@@ -14,3 +14,9 @@ __pycache__/
 
 # Docker
 .dockerignore
+
+# Backend runtime data (UI-generated, not version controlled)
+backend/data/parties.json
+backend/data/pokemon_list.json
+backend/data/usage_rates/
+backend/data/sprites/
