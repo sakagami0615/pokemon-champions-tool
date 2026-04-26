@@ -61,3 +61,31 @@ async def test_recognize_returns_400_on_invalid_image():
                 files={"file": ("bad.png", b"not an image", "image/png")},
             )
     assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_do_fetch_calls_scraper_methods():
+    """_do_fetch が fetch_pokemon_list と fetch_usage_ranking を呼び出すこと"""
+    mock_scraper = MagicMock()
+    mock_scraper.fetch_pokemon_list.return_value = []
+    mock_scraper.fetch_usage_ranking.return_value = []
+
+    with patch("routers.data.GameWithScraper", return_value=mock_scraper):
+        with patch("routers.data._manager"):
+            from routers.data import _do_fetch
+            _do_fetch()
+
+    mock_scraper.fetch_pokemon_list.assert_called_once()
+    mock_scraper.fetch_usage_ranking.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_do_fetch_handles_scraper_exception():
+    """スクレイパーが例外を投げても _do_fetch がクラッシュしないこと"""
+    mock_scraper = MagicMock()
+    mock_scraper.fetch_pokemon_list.side_effect = Exception("Network error")
+    mock_scraper.fetch_usage_ranking.side_effect = Exception("Network error")
+
+    with patch("routers.data.GameWithScraper", return_value=mock_scraper):
+        from routers.data import _do_fetch
+        _do_fetch()  # 例外が伝播しないこと（クラッシュしない）
