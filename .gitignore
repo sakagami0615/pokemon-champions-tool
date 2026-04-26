@@ -1,14 +1,13 @@
 .claude/settings.local.json
+.codex
+
+.superpowers
+docs/superpowers/
 
 # Environment variables - keep .env.example but not actual env files
 .env
 .env.local
 .env.*.local
-
-.superpowers
-docs/superpowers/
-
-@tmp
 
 # Python
 __pycache__/
@@ -17,11 +16,10 @@ __pycache__/
 .venv/
 *.egg-info/
 
-# Docker
-.dockerignore
-
 # Backend runtime data (UI-generated, not version controlled)
 backend/data/parties.json
 backend/data/pokemon_list.json
 backend/data/usage_rates/
 backend/data/sprites/
+
+@tmp
