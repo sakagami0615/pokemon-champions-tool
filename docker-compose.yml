@@ -10,7 +10,6 @@ services:
         required: false
     environment:
       - PYTHONUNBUFFERED=1
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
 
   frontend:
     build: ./frontend
