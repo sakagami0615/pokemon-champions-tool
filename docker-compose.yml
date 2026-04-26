@@ -5,6 +5,9 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+    env_file:
+      - path: .env
+        required: false
     environment:
       - PYTHONUNBUFFERED=1
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
