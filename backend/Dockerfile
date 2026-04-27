@@ -7,7 +7,7 @@ ENV UV_SYSTEM_PYTHON=1
 WORKDIR /app
 
 COPY pyproject.toml uv.lock* ./
-RUN uv pip install --system .
+RUN uv pip install --system . && uv pip install --system pytest pytest-asyncio httpx
 
 COPY src/ ./src/
 COPY tests/ ./tests/

@@ -80,3 +80,28 @@ def test_get_usage_data_returns_latest(repo):
     loaded = repo.get_usage_data()
     assert loaded is not None
     assert loaded.collected_at == "2026-04-27T00:00:00"
+
+
+def test_get_available_dates_empty(repo):
+    assert repo.get_available_dates() == []
+
+
+def test_get_available_dates_returns_sorted_desc(repo):
+    old = _make_usage_data().model_copy(update={"collected_at": "2026-04-25T00:00:00"})
+    new = _make_usage_data()  # collected_at="2026-04-27T00:00:00"
+    repo.save_usage_data(old)
+    repo.save_usage_data(new)
+    dates = repo.get_available_dates()
+    assert dates == ["2026-04-27", "2026-04-25"]
+
+
+def test_get_usage_data_by_date_returns_none_for_missing(repo):
+    assert repo.get_usage_data_by_date("2026-04-27") is None
+
+
+def test_get_usage_data_by_date_returns_correct_data(repo):
+    data = _make_usage_data()  # collected_at="2026-04-27T00:00:00"
+    repo.save_usage_data(data)
+    loaded = repo.get_usage_data_by_date("2026-04-27")
+    assert loaded is not None
+    assert loaded.pokemon[0].name == "リザードン"

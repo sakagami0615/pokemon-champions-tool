@@ -31,3 +31,14 @@ class JsonUsageRepository(IUsageRepository):
     def save_pokemon_list(self, data: PokemonList) -> None:
         path = self._data_dir / "pokemon_list.json"
         path.write_text(data.model_dump_json(indent=2), encoding="utf-8")
+
+    def get_available_dates(self) -> list[str]:
+        rate_dir = self._data_dir / "usage_rates"
+        files = sorted(rate_dir.glob("*.json"), reverse=True)
+        return [f.stem for f in files]
+
+    def get_usage_data_by_date(self, date: str) -> Optional[UsageData]:
+        path = self._data_dir / "usage_rates" / f"{date}.json"
+        if not path.exists():
+            return None
+        return UsageData.model_validate_json(path.read_text(encoding="utf-8"))
