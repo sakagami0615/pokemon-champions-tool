@@ -1,7 +1,8 @@
 import numpy as np
 import pytest
 import cv2
-from infrastructure.external.image_recognition import ImageRecognizer, RecognitionResult, InvalidImageError
+from infrastructure.external.image_recognition import ImageRecognizer
+from domain.repositories.image_recognizer import RecognitionResult, InvalidImageError
 
 
 @pytest.fixture

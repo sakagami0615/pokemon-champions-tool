@@ -4,16 +4,18 @@ import PredictionResultView from '../components/PredictionResult'
 import { usePredict } from '../../application/hooks/usePredict'
 import { useParty } from '../../application/hooks/useParty'
 import { usePokemonData } from '../../application/hooks/usePokemonData'
+import { useRecognition } from '../../application/hooks/useRecognition'
 
 export default function PredictionPage() {
   const [opponentParty, setOpponentParty] = useState<string[]>(Array(6).fill(''))
   const { result, loading, error, handlePredict } = usePredict()
   const { parties, selectedPartyId, myParty, selectParty } = useParty()
   const { pokemonNames } = usePokemonData()
+  const { recognizeImage } = useRecognition()
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonNames={pokemonNames} />
+      <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonNames={pokemonNames} onImageUpload={recognizeImage} />
 
       <div>
         <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400 mb-2">自分のパーティ</h2>

@@ -51,7 +51,7 @@ async def test_recognize_returns_six_names():
 
 @pytest.mark.asyncio
 async def test_recognize_returns_400_on_invalid_image():
-    from infrastructure.external.image_recognition import InvalidImageError
+    from domain.repositories.image_recognizer import InvalidImageError
     with patch("presentation.routers.recognition.recognizer") as mock_rec:
         mock_rec.recognize.side_effect = InvalidImageError("bad image")
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:

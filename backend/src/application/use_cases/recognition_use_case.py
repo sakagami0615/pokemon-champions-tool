@@ -1,10 +1,9 @@
-from pathlib import Path
-from infrastructure.external.image_recognition import ImageRecognizer, RecognitionResult, InvalidImageError
+from domain.repositories.image_recognizer import IImageRecognizer, RecognitionResult
 
 
 class RecognitionUseCase:
-    def __init__(self, sprites_dir: Path | str):
-        self.recognizer = ImageRecognizer(sprites_dir=sprites_dir)
+    def __init__(self, recognizer: IImageRecognizer):
+        self.recognizer = recognizer
 
     def recognize(self, image_bytes: bytes) -> RecognitionResult:
         return self.recognizer.recognize_from_bytes(image_bytes)

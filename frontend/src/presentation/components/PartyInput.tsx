@@ -1,14 +1,14 @@
 import { useRef } from 'react'
 import PokemonSlot from './PokemonSlot'
-import { recognize } from '../../infrastructure/api/recognitionApi'
 
 interface Props {
   party: string[]
   onChange: (party: string[]) => void
   pokemonNames: string[]
+  onImageUpload: (file: File) => Promise<string[]>
 }
 
-export default function PartyInput({ party, onChange, pokemonNames }: Props) {
+export default function PartyInput({ party, onChange, pokemonNames, onImageUpload }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const update = (index: number, name: string) => {
@@ -21,8 +21,8 @@ export default function PartyInput({ party, onChange, pokemonNames }: Props) {
     const file = e.target.files?.[0]
     if (!file) return
     try {
-      const result = await recognize(file)
-      onChange(result.names.slice(0, 6))
+      const names = await onImageUpload(file)
+      onChange(names)
     } catch (err) {
       alert(`画像認識に失敗しました: ${err}`)
     } finally {
@@ -38,7 +38,7 @@ export default function PartyInput({ party, onChange, pokemonNames }: Props) {
           onClick={() => fileRef.current?.click()}
           className="text-xs px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
         >
-          📷 画像から入力
+          画像から入力
         </button>
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
       </div>

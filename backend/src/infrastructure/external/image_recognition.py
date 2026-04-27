@@ -1,20 +1,10 @@
 import cv2
 import numpy as np
-from dataclasses import dataclass
 from pathlib import Path
+from domain.repositories.image_recognizer import IImageRecognizer, InvalidImageError, RecognitionResult
 
 
-class InvalidImageError(ValueError):
-    pass
-
-
-@dataclass
-class RecognitionResult:
-    names: list[str]
-    confidences: list[float]
-
-
-class ImageRecognizer:
+class ImageRecognizer(IImageRecognizer):
     def __init__(self, sprites_dir: Path | str, top_n: int = 6, threshold: float = 0.6):
         self.sprites_dir = Path(sprites_dir)
         self.top_n = top_n

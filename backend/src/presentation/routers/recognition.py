@@ -1,11 +1,12 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from pathlib import Path
 from application.use_cases.recognition_use_case import RecognitionUseCase
-from infrastructure.external.image_recognition import InvalidImageError
+from domain.repositories.image_recognizer import InvalidImageError
+from infrastructure.external.image_recognition import ImageRecognizer
 
 router = APIRouter(prefix="/api", tags=["recognition"])
 _sprites_dir = Path(__file__).parent.parent.parent.parent / "data" / "sprites"
-recognizer = RecognitionUseCase(sprites_dir=_sprites_dir)
+recognizer = RecognitionUseCase(recognizer=ImageRecognizer(sprites_dir=_sprites_dir))
 
 
 @router.post("/recognize")
