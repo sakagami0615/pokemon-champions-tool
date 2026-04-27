@@ -1,5 +1,6 @@
 import PatternCard from './PatternCard'
-import type { PredictionResult, UsageEntry } from '../../domain/entities'
+import type { PredictionResult } from '../../domain/entities/prediction'
+import type { UsageEntry } from '../../domain/entities/pokemon'
 
 interface Props {
   result: PredictionResult

@@ -1,21 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import PokemonSlot from '../components/PokemonSlot'
-import { getParties, createParty, updateParty, deleteParty, getPokemonNames } from '../../infrastructure/api/client'
-import type { Party } from '../../domain/entities'
+import { useParty } from '../../application/hooks/useParty'
+import { usePokemonData } from '../../application/hooks/usePokemonData'
+import type { Party } from '../../domain/entities/party'
 
 export default function PartyPage() {
-  const [parties, setParties] = useState<Party[]>([])
+  const { parties, createNewParty, updateExistingParty, removeParty } = useParty()
+  const { pokemonNames } = usePokemonData()
   const [editing, setEditing] = useState<Party | null>(null)
   const [name, setName] = useState('')
   const [pokemon, setPokemon] = useState<string[]>(Array(6).fill(''))
-  const [pokemonNames, setPokemonNames] = useState<string[]>([])
-
-  useEffect(() => {
-    reload()
-    getPokemonNames().then(setPokemonNames)
-  }, [])
-
-  const reload = () => getParties().then((d: { parties: Party[] }) => setParties(d.parties))
 
   const startNew = () => {
     setEditing(null)
@@ -33,18 +27,16 @@ export default function PartyPage() {
     if (!name) return
     const filled = pokemon.filter(Boolean)
     if (editing) {
-      await updateParty(editing.id, name, filled)
+      await updateExistingParty(editing.id, name, filled)
     } else {
-      await createParty(name, filled)
+      await createNewParty(name, filled)
     }
     startNew()
-    reload()
   }
 
   const remove = async (id: string) => {
     if (!confirm('削除しますか？')) return
-    await deleteParty(id)
-    reload()
+    await removeParty(id)
   }
 
   return (
@@ -59,24 +51,34 @@ export default function PartyPage() {
           className="w-full border rounded px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600"
           placeholder="パーティ名"
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
         />
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
           {pokemon.map((p, i) => (
             <PokemonSlot
               key={i}
               value={p}
-              onChange={v => { const next = [...pokemon]; next[i] = v; setPokemon(next) }}
+              onChange={(v) => {
+                const next = [...pokemon]
+                next[i] = v
+                setPokemon(next)
+              }}
               pokemonNames={pokemonNames}
             />
           ))}
         </div>
         <div className="flex gap-2">
-          <button onClick={save} className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold">
+          <button
+            onClick={save}
+            className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold"
+          >
             {editing ? '更新' : '登録'}
           </button>
           {editing && (
-            <button onClick={startNew} className="px-4 py-2 rounded border dark:border-gray-600 text-sm">
+            <button
+              onClick={startNew}
+              className="px-4 py-2 rounded border dark:border-gray-600 text-sm"
+            >
               キャンセル
             </button>
           )}
@@ -84,13 +86,17 @@ export default function PartyPage() {
       </div>
 
       <div className="space-y-3">
-        {parties.map(p => (
+        {parties.map((p) => (
           <div key={p.id} className="border rounded-xl p-4 dark:border-gray-700">
             <div className="flex items-center justify-between mb-2">
               <span className="font-bold">{p.name}</span>
               <div className="flex gap-2">
-                <button onClick={() => startEdit(p)} className="text-sm text-indigo-600 hover:underline">編集</button>
-                <button onClick={() => remove(p.id)} className="text-sm text-red-500 hover:underline">削除</button>
+                <button onClick={() => startEdit(p)} className="text-sm text-indigo-600 hover:underline">
+                  編集
+                </button>
+                <button onClick={() => remove(p.id)} className="text-sm text-red-500 hover:underline">
+                  削除
+                </button>
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -100,7 +106,9 @@ export default function PartyPage() {
                     src={`/sprites/${pname}.png`}
                     alt={pname}
                     className="w-10 h-10 object-contain mx-auto"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    onError={(e) => {
+                      ;(e.target as HTMLImageElement).style.display = 'none'
+                    }}
                   />
                   <div className="text-xs">{pname}</div>
                 </div>

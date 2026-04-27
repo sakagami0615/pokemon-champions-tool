@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import PokemonSlot from './PokemonSlot'
-import { recognize } from '../../infrastructure/api/client'
+import { recognize } from '../../infrastructure/api/recognitionApi'
 
 interface Props {
   party: string[]
