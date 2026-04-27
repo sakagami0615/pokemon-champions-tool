@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
-from routers import data, recognition, prediction, party
+from presentation.routers import data, recognition, prediction, party
 
 app = FastAPI(title="Pokemon Champions Tool")
 
