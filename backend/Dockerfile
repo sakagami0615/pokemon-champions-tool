@@ -10,6 +10,7 @@ COPY pyproject.toml uv.lock* ./
 RUN uv sync --no-dev
 
 COPY src/ ./src/
+COPY tests/ ./tests/
 COPY data/ ./data/
 
 EXPOSE 8000
