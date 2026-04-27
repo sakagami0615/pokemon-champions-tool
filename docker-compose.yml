@@ -4,7 +4,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
+      - ./backend/src:/app/src
+      - ./backend/data:/app/data
+      - ./backend/tests:/app/tests
     env_file:
       - path: .env
         required: false

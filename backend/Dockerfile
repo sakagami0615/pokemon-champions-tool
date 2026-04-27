@@ -7,7 +7,7 @@ ENV UV_SYSTEM_PYTHON=1
 WORKDIR /app
 
 COPY pyproject.toml uv.lock* ./
-RUN uv sync --no-dev
+RUN uv pip install --system .
 
 COPY src/ ./src/
 COPY tests/ ./tests/
