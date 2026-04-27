@@ -6,6 +6,7 @@ from domain.repositories.party_repository import IPartyRepository
 class JsonPartyRepository(IPartyRepository):
     def __init__(self, data_dir: Path | str = Path(__file__).parent.parent.parent.parent / "data"):
         self._path = Path(data_dir) / "parties.json"
+        self._path.parent.mkdir(parents=True, exist_ok=True)
 
     def get_all(self) -> PartiesData:
         if not self._path.exists():

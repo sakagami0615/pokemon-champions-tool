@@ -6,8 +6,6 @@ from infrastructure.persistence.json_party_repository import JsonPartyRepository
 
 @pytest.fixture
 def repo(tmp_path):
-    (tmp_path / "sprites").mkdir()
-    (tmp_path / "usage_rates").mkdir()
     return JsonPartyRepository(data_dir=tmp_path)
 
 

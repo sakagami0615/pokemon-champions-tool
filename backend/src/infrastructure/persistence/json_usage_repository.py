@@ -1,4 +1,3 @@
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
 from domain.entities.pokemon import UsageData, PokemonList
@@ -19,7 +18,7 @@ class JsonUsageRepository(IUsageRepository):
         return UsageData.model_validate_json(files[0].read_text(encoding="utf-8"))
 
     def save_usage_data(self, data: UsageData) -> None:
-        date_str = datetime.now().strftime("%Y-%m-%d")
+        date_str = data.collected_at[:10]  # "YYYY-MM-DD" from ISO datetime string
         path = self._data_dir / "usage_rates" / f"{date_str}.json"
         path.write_text(data.model_dump_json(indent=2), encoding="utf-8")
 

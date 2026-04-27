@@ -71,10 +71,12 @@ def test_save_and_get_usage_data(repo):
 
 
 def test_get_usage_data_returns_latest(repo):
-    data1 = _make_usage_data()
-    data1_copy = data1.model_copy(update={"collected_at": "2026-04-25T00:00:00"})
-    data2 = _make_usage_data()
-    repo.save_usage_data(data1_copy)
-    repo.save_usage_data(data2)
+    data_old = _make_usage_data()
+    data_old = data_old.model_copy(update={"collected_at": "2026-04-25T00:00:00"})
+    data_new = _make_usage_data()
+    # data_new has collected_at="2026-04-27T00:00:00" from _make_usage_data()
+    repo.save_usage_data(data_old)
+    repo.save_usage_data(data_new)
     loaded = repo.get_usage_data()
     assert loaded is not None
+    assert loaded.collected_at == "2026-04-27T00:00:00"
