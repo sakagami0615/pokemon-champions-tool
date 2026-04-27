@@ -1,5 +1,6 @@
 import PokemonCard from './PokemonCard'
-import type { PredictionPattern, UsageEntry } from '../../domain/entities'
+import type { PredictionPattern } from '../../domain/entities/prediction'
+import type { UsageEntry } from '../../domain/entities/pokemon'
 
 interface Props {
   pattern: PredictionPattern

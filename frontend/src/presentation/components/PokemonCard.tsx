@@ -1,4 +1,4 @@
-import type { UsageEntry } from '../../domain/entities'
+import type { UsageEntry } from '../../domain/entities/pokemon'
 
 interface Props {
   name: string
