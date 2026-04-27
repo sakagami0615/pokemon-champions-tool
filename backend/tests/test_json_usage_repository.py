@@ -105,3 +105,8 @@ def test_get_usage_data_by_date_returns_correct_data(repo):
     loaded = repo.get_usage_data_by_date("2026-04-27")
     assert loaded is not None
     assert loaded.pokemon[0].name == "リザードン"
+
+
+def test_get_usage_data_by_date_raises_on_invalid_format(repo):
+    with pytest.raises(ValueError, match="YYYY-MM-DD"):
+        repo.get_usage_data_by_date("not-a-date")
