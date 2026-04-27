@@ -18,22 +18,3 @@ export interface UsageEntry {
   evs: EvSpread[]
   ivs: Record<string, number> | null
 }
-
-export interface PredictionPattern {
-  pokemon: string[]
-}
-
-export interface PredictionResult {
-  patterns: PredictionPattern[]
-}
-
-export interface Party {
-  id: string
-  name: string
-  pokemon: string[]
-}
-
-export interface PartiesData {
-  parties: Party[]
-  last_used_id: string | null
-}
