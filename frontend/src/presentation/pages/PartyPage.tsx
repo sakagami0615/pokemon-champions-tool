@@ -58,11 +58,7 @@ export default function PartyPage() {
             <PokemonSlot
               key={i}
               value={p}
-              onChange={(v) => {
-                const next = [...pokemon]
-                next[i] = v
-                setPokemon(next)
-              }}
+              onChange={(v) => setPokemon(pokemon.map((p, j) => (j === i ? v : p)))}
               pokemonNames={pokemonNames}
             />
           ))}

@@ -29,9 +29,11 @@ export async function updateParty(id: string, name: string, pokemon: string[]): 
 }
 
 export async function deleteParty(id: string): Promise<void> {
-  await fetch(`${BASE}/party/${id}`, { method: 'DELETE' })
+  const res = await fetch(`${BASE}/party/${id}`, { method: 'DELETE' })
+  if (!res.ok) throw new Error(await res.text())
 }
 
 export async function setLastUsedParty(id: string): Promise<void> {
-  await fetch(`${BASE}/party/last-used/${id}`, { method: 'POST' })
+  const res = await fetch(`${BASE}/party/last-used/${id}`, { method: 'POST' })
+  if (!res.ok) throw new Error(await res.text())
 }

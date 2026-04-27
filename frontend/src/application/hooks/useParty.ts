@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { Party } from '../../domain/entities/party'
 import {
   getParties,
@@ -17,7 +17,7 @@ export interface UsePartyReturn {
   updateExistingParty: (id: string, name: string, pokemon: string[]) => Promise<void>
   removeParty: (id: string) => Promise<void>
   setMyParty: (pokemon: string[]) => void
-  reload: () => void
+  reload: () => Promise<void>
 }
 
 export function useParty(): UsePartyReturn {
@@ -25,8 +25,9 @@ export function useParty(): UsePartyReturn {
   const [selectedPartyId, setSelectedPartyId] = useState<string | null>(null)
   const [myParty, setMyParty] = useState<string[]>(Array(6).fill(''))
 
-  const reload = () => {
-    getParties().then((data) => {
+  const reload = useCallback(async () => {
+    try {
+      const data = await getParties()
       setParties(data.parties)
       if (data.last_used_id) {
         const last = data.parties.find((p) => p.id === data.last_used_id)
@@ -35,12 +36,14 @@ export function useParty(): UsePartyReturn {
           setSelectedPartyId(last.id)
         }
       }
-    })
-  }
+    } catch {
+      // network errors are silently ignored; UI stays with last known state
+    }
+  }, [])
 
   useEffect(() => {
     reload()
-  }, [])
+  }, [reload])
 
   const selectParty = async (party: Party) => {
     setMyParty([...party.pokemon, ...Array(6).fill('')].slice(0, 6))

@@ -31,7 +31,7 @@ export function usePredict(): UsePredictReturn {
       const res = await predict(opponent, my)
       setResult(res)
     } catch (e) {
-      setError(String(e))
+      setError(e instanceof Error ? e.message : '予期しないエラーが発生しました')
     } finally {
       setLoading(false)
     }
