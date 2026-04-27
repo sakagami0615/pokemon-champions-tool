@@ -1,15 +1,29 @@
 import logging
+import re
 from datetime import datetime
 from fastapi import APIRouter, BackgroundTasks
 from pathlib import Path
+from pydantic import BaseModel, field_validator
 from infrastructure.external.scraper import GameWithScraper
 from infrastructure.persistence.json_usage_repository import JsonUsageRepository
 from domain.entities.pokemon import PokemonList, UsageData, UsageEntry, PokemonInfo, BaseStats
+import presentation.routers._data_state as _state
 
 router = APIRouter(prefix="/api/data", tags=["data"])
 _usage_repo = JsonUsageRepository()
 _sprites_dir = Path(__file__).parent.parent.parent.parent / "data" / "sprites"
 _logger = logging.getLogger(__name__)
+
+
+class SelectDateRequest(BaseModel):
+    date: str
+
+    @field_validator("date")
+    @classmethod
+    def validate_date_format(cls, v: str) -> str:
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+            raise ValueError("date must be in YYYY-MM-DD format")
+        return v
 
 
 @router.post("/fetch")
@@ -19,13 +33,17 @@ def fetch_data(background_tasks: BackgroundTasks):
 
 
 def _do_fetch() -> None:
+    _state.scraping_in_progress = True
     try:
-        scraper = GameWithScraper(sprites_dir=_sprites_dir)
-    except Exception:
-        _logger.exception("GameWithScraper の初期化に失敗しました")
-        return
-    _fetch_and_save_pokemon_list(scraper)
-    _fetch_and_save_usage_data(scraper)
+        try:
+            scraper = GameWithScraper(sprites_dir=_sprites_dir)
+        except Exception:
+            _logger.exception("GameWithScraper の初期化に失敗しました")
+            return
+        _fetch_and_save_pokemon_list(scraper)
+        _fetch_and_save_usage_data(scraper)
+    finally:
+        _state.scraping_in_progress = False
 
 
 def _fetch_and_save_pokemon_list(scraper: GameWithScraper) -> None:
@@ -59,7 +77,6 @@ def _fetch_and_save_usage_data(scraper: GameWithScraper) -> None:
             _logger.warning("fetch_usage_ranking: 有効な使用率データが取得できませんでした。")
             return
         now = datetime.now().isoformat()
-        _logger.info("season と regulation はスクレイパー未対応のため 0/\"\" のままです。HTMLセレクタ実装後に修正が必要です。")
         usage_data = UsageData(
             collected_at=now,
             season=0,
@@ -121,15 +138,34 @@ def _raw_to_usage_entry(raw: dict) -> UsageEntry:
 def data_status():
     pokemon_list = _usage_repo.get_pokemon_list()
     usage_data = _usage_repo.get_usage_data()
+    available_dates = _usage_repo.get_available_dates()
     return {
         "pokemon_list_available": pokemon_list is not None,
         "usage_data_available": usage_data is not None,
         "usage_data_date": usage_data.collected_at if usage_data else None,
+        "scraping_in_progress": _state.scraping_in_progress,
+        "selected_date": _state.selected_date,
+        "available_dates": available_dates,
     }
+
+
+@router.get("/dates")
+def get_dates():
+    return {"dates": _usage_repo.get_available_dates()}
+
+
+@router.post("/select-date")
+def select_date(req: SelectDateRequest):
+    _state.selected_date = req.date
+    return {"selected_date": _state.selected_date}
 
 
 @router.get("/pokemon/names")
 def get_pokemon_names():
+    if _state.selected_date:
+        usage_data = _usage_repo.get_usage_data_by_date(_state.selected_date)
+        if usage_data:
+            return {"names": [p.name for p in usage_data.pokemon]}
     pokemon_list = _usage_repo.get_pokemon_list()
     if pokemon_list is None:
         return {"names": []}

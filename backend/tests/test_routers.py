@@ -101,3 +101,59 @@ def test_do_fetch_handles_scraper_exception():
         _do_fetch()
 
     mock_scraper.fetch_usage_ranking.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_data_status_includes_scraping_fields():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/api/data/status")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "scraping_in_progress" in data
+    assert "selected_date" in data
+    assert "available_dates" in data
+    assert isinstance(data["available_dates"], list)
+
+
+@pytest.mark.asyncio
+async def test_get_dates_returns_list():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/api/data/dates")
+    assert resp.status_code == 200
+    assert "dates" in resp.json()
+    assert isinstance(resp.json()["dates"], list)
+
+
+@pytest.mark.asyncio
+async def test_select_date_sets_and_returns_date():
+    import presentation.routers._data_state as state
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.post("/api/data/select-date", json={"date": "2026-04-27"})
+        assert resp.status_code == 200
+        assert resp.json()["selected_date"] == "2026-04-27"
+    finally:
+        state.selected_date = None
+
+
+@pytest.mark.asyncio
+async def test_select_date_validates_format():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.post("/api/data/select-date", json={"date": "not-a-date"})
+    assert resp.status_code == 422
+
+
+def test_do_fetch_sets_scraping_flag():
+    import presentation.routers._data_state as state
+    original = state.scraping_in_progress
+
+    mock_scraper = MagicMock()
+    mock_scraper.fetch_pokemon_list.return_value = []
+    mock_scraper.fetch_usage_ranking.return_value = []
+
+    with patch("presentation.routers.data.GameWithScraper", return_value=mock_scraper):
+        with patch("presentation.routers.data._usage_repo"):
+            from presentation.routers.data import _do_fetch
+            _do_fetch()
+
+    assert state.scraping_in_progress is False  # 完了後は False に戻る
