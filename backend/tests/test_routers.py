@@ -163,3 +163,47 @@ def test_do_fetch_sets_scraping_flag():
             _do_fetch()
 
     assert state.scraping_in_progress is False  # 完了後は False に戻る
+
+
+@pytest.mark.asyncio
+async def test_predict_uses_selected_date():
+    import application.state.scraping_state as state
+    state.selected_date = "2026-04-27"
+
+    with patch("presentation.routers.prediction._usage_repo") as mock_repo:
+        mock_usage = MagicMock()
+        mock_repo.get_usage_data_by_date.return_value = mock_usage
+        mock_repo.get_usage_data.return_value = mock_usage
+
+        with patch("presentation.routers.prediction.PredictUseCase") as mock_uc:
+            mock_uc.return_value.predict.return_value = {"patterns": []}
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                resp = await client.post("/api/predict", json={
+                    "opponent_party": ["リザードン"] * 6,
+                    "my_party": ["カメックス"] * 6,
+                })
+
+        mock_repo.get_usage_data_by_date.assert_called_once_with("2026-04-27")
+        mock_repo.get_usage_data.assert_not_called()
+
+    state.selected_date = None  # テスト後にリセット
+
+
+@pytest.mark.asyncio
+async def test_predict_uses_latest_when_no_date_selected():
+    import application.state.scraping_state as state
+    state.selected_date = None
+
+    with patch("presentation.routers.prediction._usage_repo") as mock_repo:
+        mock_usage = MagicMock()
+        mock_repo.get_usage_data.return_value = mock_usage
+
+        with patch("presentation.routers.prediction.PredictUseCase") as mock_uc:
+            mock_uc.return_value.predict.return_value = {"patterns": []}
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                resp = await client.post("/api/predict", json={
+                    "opponent_party": ["リザードン"] * 6,
+                    "my_party": ["カメックス"] * 6,
+                })
+
+        mock_repo.get_usage_data.assert_called_once()
