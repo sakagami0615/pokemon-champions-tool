@@ -15,3 +15,9 @@ class IUsageRepository(ABC):
 
     @abstractmethod
     def save_pokemon_list(self, data: PokemonList) -> None: ...
+
+    @abstractmethod
+    def get_available_dates(self) -> list[str]: ...
+
+    @abstractmethod
+    def get_usage_data_by_date(self, date: str) -> Optional[UsageData]: ...
