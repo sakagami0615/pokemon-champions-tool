@@ -34,7 +34,8 @@ export default function DataPage() {
         )}
       </section>
 
-      <section className="space-y-2">
+      <section className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-2">
+        <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">データ取得</h2>
         <button
           onClick={triggerFetch}
           disabled={isFetching}
