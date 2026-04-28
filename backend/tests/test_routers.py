@@ -166,9 +166,9 @@ def test_do_fetch_sets_scraping_flag():
 
 
 @pytest.mark.asyncio
-async def test_predict_uses_selected_date():
+async def test_predict_uses_selected_date(monkeypatch):
     import application.state.scraping_state as state
-    state.selected_date = "2026-04-27"
+    monkeypatch.setattr(state, "selected_date", "2026-04-27")
 
     with patch("presentation.routers.prediction._usage_repo") as mock_repo:
         mock_usage = MagicMock()
@@ -185,8 +185,6 @@ async def test_predict_uses_selected_date():
 
         mock_repo.get_usage_data_by_date.assert_called_once_with("2026-04-27")
         mock_repo.get_usage_data.assert_not_called()
-
-    state.selected_date = None  # テスト後にリセット
 
 
 @pytest.mark.asyncio
@@ -207,3 +205,4 @@ async def test_predict_uses_latest_when_no_date_selected():
                 })
 
         mock_repo.get_usage_data.assert_called_once()
+        assert resp.status_code == 200
