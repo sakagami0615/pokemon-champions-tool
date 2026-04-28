@@ -54,12 +54,12 @@ export function useDataManagement(): UseDataManagementReturn {
     try {
       await fetchData()
       setFetchMessage('データ取得を開始しました')
-      await loadStatus()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'データ取得の開始に失敗しました')
     } finally {
       setIsFetching(false)
     }
+    await loadStatus()
   }, [loadStatus])
 
   const handleSelectDate = useCallback(async (date: string) => {
@@ -72,7 +72,7 @@ export function useDataManagement(): UseDataManagementReturn {
       setStatus((prev) => prev ? { ...prev, selected_date: previous } : prev)
       setError(e instanceof Error ? e.message : '日付の選択に失敗しました')
     }
-  }, [status?.selected_date])
+  }, [status])
 
   return { status, isFetching, fetchMessage, error, triggerFetch, handleSelectDate }
 }
