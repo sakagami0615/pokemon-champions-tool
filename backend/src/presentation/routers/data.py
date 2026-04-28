@@ -1,13 +1,13 @@
 import logging
 import re
 from datetime import datetime
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pathlib import Path
 from pydantic import BaseModel, field_validator
 from infrastructure.external.scraper import GameWithScraper
 from infrastructure.persistence.json_usage_repository import JsonUsageRepository
 from domain.entities.pokemon import PokemonList, UsageData, UsageEntry, PokemonInfo, BaseStats
-import presentation.routers._data_state as _state
+import application.state.scraping_state as _state
 
 router = APIRouter(prefix="/api/data", tags=["data"])
 _usage_repo = JsonUsageRepository()
@@ -156,6 +156,8 @@ def get_dates():
 
 @router.post("/select-date")
 def select_date(req: SelectDateRequest):
+    if _usage_repo.get_usage_data_by_date(req.date) is None:
+        raise HTTPException(status_code=404, detail=f"{req.date} のデータが存在しません")
     _state.selected_date = req.date
     return {"selected_date": _state.selected_date}
 

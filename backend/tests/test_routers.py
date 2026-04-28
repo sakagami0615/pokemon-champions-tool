@@ -126,14 +126,21 @@ async def test_get_dates_returns_list():
 
 @pytest.mark.asyncio
 async def test_select_date_sets_and_returns_date():
-    import presentation.routers._data_state as state
-    try:
+    with patch("presentation.routers.data._usage_repo") as mock_repo:
+        mock_repo.get_usage_data_by_date.return_value = MagicMock()
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp = await client.post("/api/data/select-date", json={"date": "2026-04-27"})
-        assert resp.status_code == 200
-        assert resp.json()["selected_date"] == "2026-04-27"
-    finally:
-        state.selected_date = None
+    assert resp.status_code == 200
+    assert resp.json()["selected_date"] == "2026-04-27"
+
+
+@pytest.mark.asyncio
+async def test_select_date_returns_404_for_missing_date():
+    with patch("presentation.routers.data._usage_repo") as mock_repo:
+        mock_repo.get_usage_data_by_date.return_value = None
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.post("/api/data/select-date", json={"date": "2099-01-01"})
+    assert resp.status_code == 404
 
 
 @pytest.mark.asyncio
@@ -144,8 +151,7 @@ async def test_select_date_validates_format():
 
 
 def test_do_fetch_sets_scraping_flag():
-    import presentation.routers._data_state as state
-    original = state.scraping_in_progress
+    import application.state.scraping_state as state
 
     mock_scraper = MagicMock()
     mock_scraper.fetch_pokemon_list.return_value = []
