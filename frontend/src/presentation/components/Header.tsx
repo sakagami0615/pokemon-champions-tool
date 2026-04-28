@@ -3,8 +3,8 @@ import DarkModeToggle from './DarkModeToggle'
 interface Props {
   dark: boolean
   onToggleDark: () => void
-  page: 'prediction' | 'party'
-  onChangePage: (p: 'prediction' | 'party') => void
+  page: 'prediction' | 'party' | 'data'
+  onChangePage: (p: 'prediction' | 'party' | 'data') => void
 }
 
 export default function Header({ dark, onToggleDark, page, onChangePage }: Props) {
@@ -24,6 +24,12 @@ export default function Header({ dark, onToggleDark, page, onChangePage }: Props
             className={`px-3 py-1 rounded text-sm ${page === 'party' ? 'bg-indigo-600 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             パーティ登録
+          </button>
+          <button
+            onClick={() => onChangePage('data')}
+            className={`px-3 py-1 rounded text-sm ${page === 'data' ? 'bg-indigo-600 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+          >
+            データ管理
           </button>
         </nav>
       </div>
