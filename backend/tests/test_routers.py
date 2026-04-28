@@ -126,12 +126,16 @@ async def test_get_dates_returns_list():
 
 @pytest.mark.asyncio
 async def test_select_date_sets_and_returns_date():
-    with patch("presentation.routers.data._usage_repo") as mock_repo:
-        mock_repo.get_usage_data_by_date.return_value = MagicMock()
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            resp = await client.post("/api/data/select-date", json={"date": "2026-04-27"})
-    assert resp.status_code == 200
-    assert resp.json()["selected_date"] == "2026-04-27"
+    import application.state.scraping_state as state
+    try:
+        with patch("presentation.routers.data._usage_repo") as mock_repo:
+            mock_repo.get_usage_data_by_date.return_value = MagicMock()
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                resp = await client.post("/api/data/select-date", json={"date": "2026-04-27"})
+        assert resp.status_code == 200
+        assert resp.json()["selected_date"] == "2026-04-27"
+    finally:
+        state.selected_date = None
 
 
 @pytest.mark.asyncio
@@ -177,11 +181,12 @@ async def test_predict_uses_selected_date(monkeypatch):
 
         with patch("presentation.routers.prediction.PredictUseCase") as mock_uc:
             mock_uc.return_value.predict.return_value = {"patterns": []}
-            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-                resp = await client.post("/api/predict", json={
-                    "opponent_party": ["リザードン"] * 6,
-                    "my_party": ["カメックス"] * 6,
-                })
+            with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
+                async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                    resp = await client.post("/api/predict", json={
+                        "opponent_party": ["リザードン"] * 6,
+                        "my_party": ["カメックス"] * 6,
+                    })
 
         mock_repo.get_usage_data_by_date.assert_called_once_with("2026-04-27")
         mock_repo.get_usage_data.assert_not_called()
@@ -198,11 +203,12 @@ async def test_predict_uses_latest_when_no_date_selected():
 
         with patch("presentation.routers.prediction.PredictUseCase") as mock_uc:
             mock_uc.return_value.predict.return_value = {"patterns": []}
-            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-                resp = await client.post("/api/predict", json={
-                    "opponent_party": ["リザードン"] * 6,
-                    "my_party": ["カメックス"] * 6,
-                })
+            with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
+                async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                    resp = await client.post("/api/predict", json={
+                        "opponent_party": ["リザードン"] * 6,
+                        "my_party": ["カメックス"] * 6,
+                    })
 
         mock_repo.get_usage_data.assert_called_once()
         assert resp.status_code == 200
