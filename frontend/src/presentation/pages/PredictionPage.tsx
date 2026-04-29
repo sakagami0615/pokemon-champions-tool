@@ -38,6 +38,18 @@ export default function PredictionPage() {
             </button>
           ))}
         </div>
+        {selectedPartyId && (
+          <div className="flex gap-2 flex-wrap mt-2">
+            {myParty.filter(Boolean).map((pokemon, i) => (
+              <span
+                key={i}
+                className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm text-gray-700 dark:text-gray-300"
+              >
+                {pokemon}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {error && <p className="text-red-500 text-sm">{error}</p>}

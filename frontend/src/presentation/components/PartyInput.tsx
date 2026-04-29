@@ -33,7 +33,7 @@ export default function PartyInput({ party, onChange, pokemonNames, onImageUploa
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">相手パーティ（6体）</h2>
+        <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">相手パーティ</h2>
         <button
           onClick={() => fileRef.current?.click()}
           className="text-xs px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"

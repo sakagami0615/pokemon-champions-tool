@@ -17,9 +17,9 @@ export function usePredict(): UsePredictReturn {
   const handlePredict = async (opponentParty: string[], myParty: string[]) => {
     const opponent = opponentParty.filter(Boolean)
     const my = myParty.filter(Boolean)
+    setError(null)
     if (opponent.length < 3) return
     if (my.length === 0) return
-    setError(null)
     setLoading(true)
     try {
       const res = await predict(opponent, my)
