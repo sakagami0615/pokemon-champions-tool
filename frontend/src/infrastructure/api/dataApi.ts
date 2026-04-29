@@ -1,12 +1,20 @@
 const BASE = '/api'
 
+export interface TopPokemon {
+  name: string
+}
+
+export interface DateDetail {
+  date: string
+  pokemon_count: number
+  top_pokemon: TopPokemon[]
+}
+
 export interface DataStatus {
-  pokemon_list_available: boolean
-  usage_data_available: boolean
-  usage_data_date: string | null
   scraping_in_progress: boolean
   selected_date: string | null
   available_dates: string[]
+  dates_detail: DateDetail[]
 }
 
 export async function fetchData(): Promise<{ status: string }> {

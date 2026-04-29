@@ -17,15 +17,9 @@ export function usePredict(): UsePredictReturn {
   const handlePredict = async (opponentParty: string[], myParty: string[]) => {
     const opponent = opponentParty.filter(Boolean)
     const my = myParty.filter(Boolean)
-    if (opponent.length < 6) {
-      setError('相手パーティを6体入力してください')
-      return
-    }
-    if (my.length < 6) {
-      setError('自分のパーティを6体入力してください')
-      return
-    }
     setError(null)
+    if (opponent.length < 3) return
+    if (my.length === 0) return
     setLoading(true)
     try {
       const res = await predict(opponent, my)

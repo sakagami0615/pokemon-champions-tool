@@ -112,7 +112,9 @@ async def test_data_status_includes_scraping_fields():
     assert "scraping_in_progress" in data
     assert "selected_date" in data
     assert "available_dates" in data
+    assert "dates_detail" in data
     assert isinstance(data["available_dates"], list)
+    assert isinstance(data["dates_detail"], list)
 
 
 @pytest.mark.asyncio
@@ -212,3 +214,45 @@ async def test_predict_uses_latest_when_no_date_selected():
 
         mock_repo.get_usage_data.assert_called_once()
         assert resp.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_data_status_dates_detail_structure():
+    from domain.entities.pokemon import UsageData, UsageEntry, PokemonList, PokemonInfo, BaseStats
+    import presentation.routers.data as rd
+
+    entry = UsageEntry(
+        name="ピカチュウ",
+        moves=[], items=[], abilities=[], natures=[], teammates=[], evs=[]
+    )
+    usage = UsageData(
+        collected_at="2026-04-29T12:00:00",
+        season=0, regulation="", source_updated_at="2026-04-29T12:00:00",
+        pokemon=[entry]
+    )
+    plist = PokemonList(
+        collected_at="2026-04-29T12:00:00",
+        pokemon=[
+            PokemonInfo(
+                pokedex_id=25, name="ピカチュウ", types=["でんき"],
+                base_stats=BaseStats(hp=35, attack=55, defense=40, sp_attack=50, sp_defense=50, speed=90),
+                height_m=0.4, weight_kg=6.0, low_kick_power=20,
+                abilities=["せいでんき"], weaknesses=["じめん"], resistances=["でんき"],
+                sprite_path="sprites/ピカチュウ.png"
+            )
+        ]
+    )
+    rd._usage_repo.save_usage_data(usage)
+    rd._usage_repo.save_pokemon_list(plist)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/api/data/status")
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "dates_detail" in data
+    assert len(data["dates_detail"]) == 1
+    detail = data["dates_detail"][0]
+    assert detail["date"] == "2026-04-29"
+    assert detail["pokemon_count"] == 1
+    assert detail["top_pokemon"] == [{"name": "ピカチュウ"}]

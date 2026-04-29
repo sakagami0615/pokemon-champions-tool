@@ -137,15 +137,27 @@ def _raw_to_usage_entry(raw: dict) -> UsageEntry:
 @router.get("/status")
 def data_status():
     pokemon_list = _usage_repo.get_pokemon_list()
-    usage_data = _usage_repo.get_usage_data()
     available_dates = _usage_repo.get_available_dates()
+    pokemon_count = len(pokemon_list.pokemon) if pokemon_list else 0
+
+    dates_detail = []
+    for date in available_dates:
+        usage_data = _usage_repo.get_usage_data_by_date(date)
+        if usage_data:
+            top_pokemon = [{"name": p.name} for p in usage_data.pokemon[:3]]
+        else:
+            top_pokemon = []
+        dates_detail.append({
+            "date": date,
+            "pokemon_count": pokemon_count,
+            "top_pokemon": top_pokemon,
+        })
+
     return {
-        "pokemon_list_available": pokemon_list is not None,
-        "usage_data_available": usage_data is not None,
-        "usage_data_date": usage_data.collected_at if usage_data else None,
         "scraping_in_progress": _state.scraping_in_progress,
         "selected_date": _state.selected_date,
         "available_dates": available_dates,
+        "dates_detail": dates_detail,
     }
 
 

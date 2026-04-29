@@ -39,6 +39,8 @@ export default function PartyPage() {
     await removeParty(id)
   }
 
+  const isSaveable = name.trim().length > 0 && pokemon.filter(Boolean).length >= 3
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <h1 className="font-bold text-xl">パーティ登録</h1>
@@ -66,7 +68,8 @@ export default function PartyPage() {
         <div className="flex gap-2">
           <button
             onClick={save}
-            className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold"
+            disabled={!isSaveable}
+            className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold disabled:opacity-50"
           >
             {editing ? '更新' : '登録'}
           </button>

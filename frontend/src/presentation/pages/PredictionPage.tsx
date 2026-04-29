@@ -13,6 +13,10 @@ export default function PredictionPage() {
   const { pokemonNames } = usePokemonData()
   const { recognizeImage } = useRecognition()
 
+  const isReady =
+    opponentParty.filter(Boolean).length >= 3 &&
+    selectedPartyId !== null
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonNames={pokemonNames} onImageUpload={recognizeImage} />
@@ -34,13 +38,25 @@ export default function PredictionPage() {
             </button>
           ))}
         </div>
+        {selectedPartyId && (
+          <div className="flex gap-2 flex-wrap mt-2">
+            {myParty.filter(Boolean).map((pokemon, i) => (
+              <span
+                key={i}
+                className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm text-gray-700 dark:text-gray-300"
+              >
+                {pokemon}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {error && <p className="text-red-500 text-sm">{error}</p>}
 
       <button
         onClick={() => handlePredict(opponentParty, myParty)}
-        disabled={loading}
+        disabled={loading || !isReady}
         className="w-full py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold disabled:opacity-50"
       >
         {loading ? '予想中...' : '選出予想する'}
