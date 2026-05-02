@@ -35,6 +35,15 @@ backend/
 │           ├── party.py               # 自分パーティ CRUD
 │           ├── prediction.py          # 選出予想エンドポイント
 │           └── recognition.py         # 画像認識エンドポイント
+├── tests/                   # テストコード（src/ の外）
+│   ├── conftest.py
+│   ├── test_image_recognition.py
+│   ├── test_json_party_repository.py
+│   ├── test_json_usage_repository.py
+│   ├── test_models.py
+│   ├── test_predict_use_case.py
+│   ├── test_routers.py
+│   └── test_scraper.py
 ├── data/                    # 永続化データ（バージョン管理外）
 │   ├── sprites/             # ポケモンスプライト画像
 │   ├── pokemon_list.json    # 内定ポケモン一覧
