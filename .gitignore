@@ -1,7 +1,7 @@
 .claude/settings.local.json
 .codex
 
-.superpowers/brainstorm/
+.superpowers
 
 # Environment variables - keep .env.example but not actual env files
 .env
