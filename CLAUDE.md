@@ -80,6 +80,15 @@ try {
 ローカル開発時は `.env` ファイルを作成して設定する（`.env.example` 参照）。
 `.env` は `.gitignore` に含まれており、リポジトリにコミットしないこと。
 
+## Superpowers ファイル保存先
+
+superpowers が生成するファイルはすべて `.superpowers/` 配下に保存する。
+
+- 設計書（spec）: `.superpowers/specs/YYYY-MM-DD-<feature-name>-design.md`
+- 実装プラン（plan）: `.superpowers/plans/YYYY-MM-DD-<feature-name>.md`
+
+`docs/superpowers/` は使用しない。
+
 ## Gitワークフロー
 
 - Conventional Commits を使用：`feat:`, `fix:`, `refactor:`, `docs:`, `test:`

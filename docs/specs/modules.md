@@ -7,28 +7,34 @@
 ```
 backend/
 ├── src/          # ソースコード
-│   ├── main.py              # FastAPI エントリーポイント
-│   ├── routers/
-│   │   ├── recognition.py   # 画像認識エンドポイント
-│   │   ├── prediction.py    # 選出予想エンドポイント
-│   │   ├── party.py         # 自分パーティ CRUD
-│   │   └── data.py          # データ取得トリガー
-│   ├── services/
-│   │   ├── image_recognition.py  # OpenCV テンプレートマッチング
-│   │   ├── scraper.py            # GameWith スクレイピング
-│   │   ├── ai_predictor.py       # Claude API 呼び出し
-│   │   └── data_manager.py       # JSON ファイル読み書き
-│   ├── models/
-│   │   ├── pokemon.py       # ポケモン関連モデル
-│   │   └── party.py         # パーティ関連モデル
-│   └── tests/               # テストコード
-│       ├── conftest.py
-│       ├── test_ai_predictor.py
-│       ├── test_data_manager.py
-│       ├── test_image_recognition.py
-│       ├── test_models.py
-│       ├── test_routers.py
-│       └── test_scraper.py
+│   ├── main.py                        # FastAPI エントリーポイント
+│   ├── domain/
+│   │   ├── entities/
+│   │   │   ├── party.py               # パーティエンティティ
+│   │   │   └── pokemon.py             # ポケモンエンティティ
+│   │   └── repositories/
+│   │       ├── image_recognizer.py    # 画像認識リポジトリインターフェース
+│   │       ├── party_repository.py    # パーティリポジトリインターフェース
+│   │       └── usage_repository.py    # 使用率データリポジトリインターフェース
+│   ├── application/
+│   │   ├── state/
+│   │   │   └── scraping_state.py      # スクレイピング実行状態（インメモリ）
+│   │   └── use_cases/
+│   │       ├── predict_use_case.py    # 選出予想ユースケース
+│   │       └── recognition_use_case.py # 画像認識ユースケース
+│   ├── infrastructure/
+│   │   ├── external/
+│   │   │   ├── image_recognition.py   # OpenCV テンプレートマッチング実装
+│   │   │   └── scraper.py             # GameWith スクレイピング実装
+│   │   └── persistence/
+│   │       ├── json_party_repository.py  # パーティ JSON 永続化実装
+│   │       └── json_usage_repository.py  # 使用率データ JSON 永続化実装
+│   └── presentation/
+│       └── routers/
+│           ├── data.py                # データ取得・ステータス・日付選択エンドポイント
+│           ├── party.py               # 自分パーティ CRUD
+│           ├── prediction.py          # 選出予想エンドポイント
+│           └── recognition.py         # 画像認識エンドポイント
 ├── data/                    # 永続化データ（バージョン管理外）
 │   ├── sprites/             # ポケモンスプライト画像
 │   ├── pokemon_list.json    # 内定ポケモン一覧
@@ -49,12 +55,26 @@ backend/
 frontend/src/
 ├── domain/
 │   └── entities/
-│       └── index.ts             # ビジネスエンティティの型定義
+│       ├── party.ts             # パーティエンティティ型定義
+│       ├── pokemon.ts           # ポケモンエンティティ型定義
+│       └── prediction.ts        # 選出予想エンティティ型定義
 ├── infrastructure/
 │   └── api/
-│       └── client.ts            # バックエンド API クライアント（fetch）
+│       ├── dataApi.ts           # データ管理 API クライアント
+│       ├── partyApi.ts          # パーティ API クライアント
+│       ├── predictionApi.ts     # 選出予想 API クライアント
+│       └── recognitionApi.ts    # 画像認識 API クライアント
+├── application/
+│   └── hooks/
+│       ├── useDataManagement.ts # データ管理状態・操作
+│       ├── useParty.ts          # パーティ CRUD 操作
+│       ├── usePokemonData.ts    # ポケモンデータ取得
+│       ├── usePredict.ts        # 選出予想実行
+│       └── useRecognition.ts    # 画像認識実行
 ├── presentation/
 │   ├── components/
+│   │   ├── DataCard.tsx         # データ管理：日付カード（1件分）
+│   │   ├── DataCardList.tsx     # データ管理：日付カード一覧（スクロール可）
 │   │   ├── DarkModeToggle.tsx   # ダークモード切り替えボタン
 │   │   ├── Header.tsx           # ヘッダー（ナビゲーション込み）
 │   │   ├── PartyInput.tsx       # 相手パーティ入力（6枠）
@@ -63,13 +83,13 @@ frontend/src/
 │   │   ├── PokemonSlot.tsx      # 1枠：スプライト＋名前選択
 │   │   └── PredictionResult.tsx # 選出予想パターン一覧表示
 │   ├── pages/
-│   │   ├── PredictionPage.tsx   # 選出予想メイン画面
-│   │   └── PartyPage.tsx        # 自分パーティ登録画面
+│   │   ├── DataPage.tsx         # データ管理画面
+│   │   ├── PartyPage.tsx        # 自分パーティ登録画面
+│   │   └── PredictionPage.tsx   # 選出予想メイン画面
 │   └── hooks/
 │       └── useDarkMode.ts       # ダークモード状態管理
 ├── App.tsx
 ├── main.tsx
-├── App.css
 ├── index.css
 └── vite-env.d.ts
 ```
@@ -80,9 +100,8 @@ frontend/src/
 |---|---|---|
 | `domain/entities/` | ビジネスエンティティの型定義 | なし |
 | `infrastructure/api/` | バックエンド API との HTTP 通信 | domain |
-| `presentation/` | React コンポーネント・ページ・UI フック | domain, infrastructure |
-
-将来的に UseCases を導入する場合は `application/useCases/` を追加する。
+| `application/hooks/` | ビジネスロジックを持つカスタムフック | domain, infrastructure |
+| `presentation/` | React コンポーネント・ページ・UI フック | domain, infrastructure, application |
 
 ### ファイル管理方針
 
