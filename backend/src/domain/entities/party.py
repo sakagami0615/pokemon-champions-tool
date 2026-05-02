@@ -5,7 +5,7 @@ from pydantic import BaseModel
 class Party(BaseModel):
     id: str
     name: str
-    pokemon: list[str]
+    pokemons: list[str]
 
 
 class PartiesData(BaseModel):
@@ -14,7 +14,7 @@ class PartiesData(BaseModel):
 
 
 class PredictionPattern(BaseModel):
-    pokemon: list[str]
+    pokemons: list[str]
 
 
 class PredictionResult(BaseModel):
