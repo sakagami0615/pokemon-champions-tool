@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 from typing import Optional
-from domain.entities.pokemon import UsageData, PokemonList
+from domain.entities.pokemon import UsageData
 from domain.repositories.usage_repository import IUsageRepository
 
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -23,18 +23,8 @@ class JsonUsageRepository(IUsageRepository):
         return UsageData.model_validate_json(files[0].read_text(encoding="utf-8"))
 
     def save_usage_data(self, data: UsageData) -> None:
-        date_str = data.collected_at[:10]  # "YYYY-MM-DD" from ISO datetime string
+        date_str = data.collected_at[:10]
         path = self._data_dir / "usage_rates" / f"{date_str}.json"
-        path.write_text(data.model_dump_json(indent=2), encoding="utf-8")
-
-    def get_pokemon_list(self) -> Optional[PokemonList]:
-        path = self._data_dir / "pokemon_list.json"
-        if not path.exists():
-            return None
-        return PokemonList.model_validate_json(path.read_text(encoding="utf-8"))
-
-    def save_pokemon_list(self, data: PokemonList) -> None:
-        path = self._data_dir / "pokemon_list.json"
         path.write_text(data.model_dump_json(indent=2), encoding="utf-8")
 
     def get_available_dates(self) -> list[str]:

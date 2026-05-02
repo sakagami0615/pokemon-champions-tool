@@ -1,7 +1,6 @@
 import pytest
 from pathlib import Path
 from domain.entities.pokemon import (
-    PokemonList, PokemonInfo, BaseStats,
     UsageData, UsageEntry, RatedItem, EvSpread,
 )
 from infrastructure.persistence.json_usage_repository import JsonUsageRepository
@@ -13,29 +12,13 @@ def repo(tmp_path):
     return JsonUsageRepository(data_dir=tmp_path)
 
 
-def _make_pokemon_list():
-    return PokemonList(
-        collected_at="2026-04-27T00:00:00",
-        pokemon=[
-            PokemonInfo(
-                pokedex_id=6, name="リザードン", types=["ほのお"],
-                sprite_path="sprites/006.png",
-                base_stats=BaseStats(hp=78, attack=84, defense=78,
-                                     sp_attack=109, sp_defense=85, speed=100),
-                height_m=1.7, weight_kg=90.5, low_kick_power=100,
-                abilities=["もうか"], weaknesses=["いわ"], resistances=["くさ"],
-            )
-        ],
-    )
-
-
 def _make_usage_data():
     return UsageData(
         collected_at="2026-04-27T00:00:00",
         season=1,
         regulation="レギュレーションA",
         source_updated_at="2026-04-26",
-        pokemon=[
+        pokemons=[
             UsageEntry(
                 name="リザードン",
                 moves=[RatedItem(name="かえんほうしゃ", rate=78)],
@@ -49,16 +32,6 @@ def _make_usage_data():
     )
 
 
-def test_get_pokemon_list_returns_none_when_missing(repo):
-    assert repo.get_pokemon_list() is None
-
-
-def test_save_and_get_pokemon_list(repo):
-    repo.save_pokemon_list(_make_pokemon_list())
-    loaded = repo.get_pokemon_list()
-    assert loaded.pokemon[0].name == "リザードン"
-
-
 def test_get_usage_data_returns_none_when_missing(repo):
     assert repo.get_usage_data() is None
 
@@ -66,7 +39,7 @@ def test_get_usage_data_returns_none_when_missing(repo):
 def test_save_and_get_usage_data(repo):
     repo.save_usage_data(_make_usage_data())
     loaded = repo.get_usage_data()
-    assert loaded.pokemon[0].name == "リザードン"
+    assert loaded.pokemons[0].name == "リザードン"
     assert loaded.season == 1
 
 
@@ -104,7 +77,7 @@ def test_get_usage_data_by_date_returns_correct_data(repo):
     repo.save_usage_data(data)
     loaded = repo.get_usage_data_by_date("2026-04-27")
     assert loaded is not None
-    assert loaded.pokemon[0].name == "リザードン"
+    assert loaded.pokemons[0].name == "リザードン"
 
 
 def test_get_usage_data_by_date_raises_on_invalid_format(repo):

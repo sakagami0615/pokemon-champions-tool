@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional
-from domain.entities.pokemon import UsageData, PokemonList
+from domain.entities.pokemon import UsageData
 
 
 class IUsageRepository(ABC):
@@ -9,12 +9,6 @@ class IUsageRepository(ABC):
 
     @abstractmethod
     def save_usage_data(self, data: UsageData) -> None: ...
-
-    @abstractmethod
-    def get_pokemon_list(self) -> Optional[PokemonList]: ...
-
-    @abstractmethod
-    def save_pokemon_list(self, data: PokemonList) -> None: ...
 
     @abstractmethod
     def get_available_dates(self) -> list[str]: ...
