@@ -24,7 +24,7 @@ async def test_create_party():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         resp = await client.post("/api/party", json={
             "name": "テストパーティ",
-            "pokemon": ["リザードン", "カメックス", "フシギバナ", "ピカチュウ", "ゲンガー", "カビゴン"]
+            "pokemons": ["リザードン", "カメックス", "フシギバナ", "ピカチュウ", "ゲンガー", "カビゴン"]
         })
     assert resp.status_code == 200
     data = resp.json()
@@ -63,16 +63,18 @@ async def test_recognize_returns_400_on_invalid_image():
 
 
 def test_do_fetch_calls_scraper_methods():
-    mock_scraper = MagicMock()
-    mock_scraper.fetch_pokemon_list.return_value = []
-    mock_scraper.fetch_usage_ranking.return_value = []
+    with patch("presentation.routers.data.ScrapePokemonListUseCase") as mock_use_case_cls:
+        mock_use_case = MagicMock()
+        mock_use_case_cls.return_value = mock_use_case
+        with patch("presentation.routers.data.GameWithScraper") as mock_gw_cls:
+            mock_scraper = MagicMock()
+            mock_scraper.fetch_usage_ranking.return_value = []
+            mock_gw_cls.return_value = mock_scraper
+            with patch("presentation.routers.data._usage_repo"):
+                from presentation.routers.data import _do_fetch
+                _do_fetch()
 
-    with patch("presentation.routers.data.GameWithScraper", return_value=mock_scraper):
-        with patch("presentation.routers.data._usage_repo"):
-            from presentation.routers.data import _do_fetch
-            _do_fetch()
-
-    mock_scraper.fetch_pokemon_list.assert_called_once()
+    mock_use_case.execute.assert_called_once()
     mock_scraper.fetch_usage_ranking.assert_called_once()
 
 
@@ -92,13 +94,17 @@ def test_do_fetch_handles_scraper_init_exception():
 
 
 def test_do_fetch_handles_scraper_exception():
-    mock_scraper = MagicMock()
-    mock_scraper.fetch_pokemon_list.side_effect = Exception("Network error")
-    mock_scraper.fetch_usage_ranking.return_value = []
-
-    with patch("presentation.routers.data.GameWithScraper", return_value=mock_scraper):
-        from presentation.routers.data import _do_fetch
-        _do_fetch()
+    with patch("presentation.routers.data.ScrapePokemonListUseCase") as mock_use_case_cls:
+        mock_use_case = MagicMock()
+        mock_use_case.execute.side_effect = Exception("Scrape error")
+        mock_use_case_cls.return_value = mock_use_case
+        with patch("presentation.routers.data.GameWithScraper") as mock_gw_cls:
+            mock_scraper = MagicMock()
+            mock_scraper.fetch_usage_ranking.return_value = []
+            mock_gw_cls.return_value = mock_scraper
+            with patch("presentation.routers.data._usage_repo"):
+                from presentation.routers.data import _do_fetch
+                _do_fetch()
 
     mock_scraper.fetch_usage_ranking.assert_called_once()
 
@@ -159,16 +165,17 @@ async def test_select_date_validates_format():
 def test_do_fetch_sets_scraping_flag():
     import application.state.scraping_state as state
 
-    mock_scraper = MagicMock()
-    mock_scraper.fetch_pokemon_list.return_value = []
-    mock_scraper.fetch_usage_ranking.return_value = []
+    with patch("presentation.routers.data.ScrapePokemonListUseCase") as mock_use_case_cls:
+        mock_use_case_cls.return_value = MagicMock()
+        with patch("presentation.routers.data.GameWithScraper") as mock_gw_cls:
+            mock_scraper = MagicMock()
+            mock_scraper.fetch_usage_ranking.return_value = []
+            mock_gw_cls.return_value = mock_scraper
+            with patch("presentation.routers.data._usage_repo"):
+                from presentation.routers.data import _do_fetch
+                _do_fetch()
 
-    with patch("presentation.routers.data.GameWithScraper", return_value=mock_scraper):
-        with patch("presentation.routers.data._usage_repo"):
-            from presentation.routers.data import _do_fetch
-            _do_fetch()
-
-    assert state.scraping_in_progress is False  # 完了後は False に戻る
+    assert state.scraping_in_progress is False
 
 
 @pytest.mark.asyncio
@@ -228,22 +235,24 @@ async def test_data_status_dates_detail_structure():
     usage = UsageData(
         collected_at="2026-04-29T12:00:00",
         season=0, regulation="", source_updated_at="2026-04-29T12:00:00",
-        pokemon=[entry]
+        pokemons=[entry]
     )
     plist = PokemonList(
         collected_at="2026-04-29T12:00:00",
-        pokemon=[
+        pokemons=[
             PokemonInfo(
                 pokedex_id=25, name="ピカチュウ", types=["でんき"],
                 base_stats=BaseStats(hp=35, attack=55, defense=40, sp_attack=50, sp_defense=50, speed=90),
                 height_m=0.4, weight_kg=6.0, low_kick_power=20,
-                abilities=["せいでんき"], weaknesses=["じめん"], resistances=["でんき"],
-                sprite_path="sprites/ピカチュウ.png"
+                abilities=["せいでんき"],
+                no_effect_types=[], quarter_damage_types=[], half_damage_types=["でんき"], double_damage_types=["じめん"],
+                sprite_path="sprites/025.png"
             )
-        ]
+        ],
+        mega_pokemons=[]
     )
     rd._usage_repo.save_usage_data(usage)
-    rd._usage_repo.save_pokemon_list(plist)
+    rd._pokemon_list_repo.save_pokemon_list(plist)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         resp = await client.get("/api/data/status")
