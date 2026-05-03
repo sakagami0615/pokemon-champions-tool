@@ -16,7 +16,7 @@ export default function PatternCard({ pattern, index, usageMap }: Props) {
         {isTop ? '🏆 ' : ''}パターン{index + 1}{isTop ? '（最有力）' : ''}
       </div>
       <div className="flex gap-2">
-        {pattern.pokemon.map((name, i) => (
+        {pattern.pokemons.map((name, i) => (
           <PokemonCard key={i} name={name} usage={usageMap[name] ?? null} />
         ))}
       </div>

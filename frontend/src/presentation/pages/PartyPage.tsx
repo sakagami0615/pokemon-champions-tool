@@ -20,7 +20,7 @@ export default function PartyPage() {
   const startEdit = (p: Party) => {
     setEditing(p)
     setName(p.name)
-    setPokemon([...p.pokemon, ...Array(6).fill('')].slice(0, 6))
+    setPokemon([...p.pokemons, ...Array(6).fill('')].slice(0, 6))
   }
 
   const save = async () => {
@@ -99,7 +99,7 @@ export default function PartyPage() {
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">
-              {p.pokemon.map((pname, i) => (
+              {p.pokemons.map((pname, i) => (
                 <div key={i} className="text-center">
                   <img
                     src={`/sprites/${pname}.png`}

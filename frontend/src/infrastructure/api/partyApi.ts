@@ -8,21 +8,21 @@ export async function getParties(): Promise<PartiesData> {
   return res.json()
 }
 
-export async function createParty(name: string, pokemon: string[]): Promise<Party> {
+export async function createParty(name: string, pokemons: string[]): Promise<Party> {
   const res = await fetch(`${BASE}/party`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, pokemon }),
+    body: JSON.stringify({ name, pokemons }),
   })
   if (!res.ok) throw new Error(await res.text())
   return res.json()
 }
 
-export async function updateParty(id: string, name: string, pokemon: string[]): Promise<Party> {
+export async function updateParty(id: string, name: string, pokemons: string[]): Promise<Party> {
   const res = await fetch(`${BASE}/party/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, pokemon }),
+    body: JSON.stringify({ name, pokemons }),
   })
   if (!res.ok) throw new Error(await res.text())
   return res.json()
