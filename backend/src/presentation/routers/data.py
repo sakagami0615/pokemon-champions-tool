@@ -5,12 +5,16 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pathlib import Path
 from pydantic import BaseModel, field_validator
 from infrastructure.external.scraper import GameWithScraper
+from infrastructure.external.pokemon_list_scraper import PokemonListScraper
 from infrastructure.persistence.json_usage_repository import JsonUsageRepository
-from domain.entities.pokemon import PokemonList, UsageData, UsageEntry, PokemonInfo, BaseStats
+from infrastructure.persistence.json_pokemon_list_repository import JsonPokemonListRepository
+from domain.entities.pokemon import UsageData, UsageEntry
+from application.use_cases.scrape_pokemon_list_use_case import ScrapePokemonListUseCase
 import application.state.scraping_state as _state
 
 router = APIRouter(prefix="/api/data", tags=["data"])
 _usage_repo = JsonUsageRepository()
+_pokemon_list_repo = JsonPokemonListRepository()
 _sprites_dir = Path(__file__).parent.parent.parent.parent / "data" / "sprites"
 _logger = logging.getLogger(__name__)
 
@@ -36,34 +40,23 @@ def _do_fetch() -> None:
     _state.scraping_in_progress = True
     try:
         try:
+            use_case = ScrapePokemonListUseCase(
+                scraper=PokemonListScraper(sprites_dir=_sprites_dir),
+                repository=_pokemon_list_repo,
+            )
+            use_case.execute()
+            _logger.info("ポケモン一覧のスクレイピングが完了しました")
+        except Exception:
+            _logger.exception("ポケモン一覧スクレイピングでエラーが発生しました")
+
+        try:
             scraper = GameWithScraper(sprites_dir=_sprites_dir)
         except Exception:
             _logger.exception("GameWithScraper の初期化に失敗しました")
             return
-        _fetch_and_save_pokemon_list(scraper)
         _fetch_and_save_usage_data(scraper)
     finally:
         _state.scraping_in_progress = False
-
-
-def _fetch_and_save_pokemon_list(scraper: GameWithScraper) -> None:
-    try:
-        raw_list = scraper.fetch_pokemon_list()
-        if not raw_list:
-            _logger.warning("fetch_pokemon_list: 取得件数が0件でした。HTMLセレクタを確認してください。")
-            return
-        pokemon_infos = [_raw_to_pokemon_info(p) for p in raw_list if _is_valid_pokemon_info(p)]
-        if not pokemon_infos:
-            _logger.warning("fetch_pokemon_list: 有効なポケモン情報が取得できませんでした。")
-            return
-        pokemon_list = PokemonList(
-            collected_at=datetime.now().isoformat(),
-            pokemon=pokemon_infos,
-        )
-        _usage_repo.save_pokemon_list(pokemon_list)
-        _logger.info("ポケモン一覧を保存しました: %d件", len(pokemon_infos))
-    except Exception:
-        _logger.exception("fetch_pokemon_list でエラーが発生しました")
 
 
 def _fetch_and_save_usage_data(scraper: GameWithScraper) -> None:
@@ -82,39 +75,12 @@ def _fetch_and_save_usage_data(scraper: GameWithScraper) -> None:
             season=0,
             regulation="",
             source_updated_at=now,
-            pokemon=entries,
+            pokemons=entries,
         )
         _usage_repo.save_usage_data(usage_data)
         _logger.info("使用率データを保存しました: %d件", len(entries))
     except Exception:
         _logger.exception("fetch_usage_ranking でエラーが発生しました")
-
-
-def _is_valid_pokemon_info(raw: dict) -> bool:
-    return bool(raw.get("name")) and bool(raw.get("sprite_path"))
-
-
-def _raw_to_pokemon_info(raw: dict) -> PokemonInfo:
-    return PokemonInfo(
-        pokedex_id=raw.get("pokedex_id", 0),
-        name=raw["name"],
-        types=raw.get("types", []),
-        base_stats=BaseStats(
-            hp=raw.get("hp", 0),
-            attack=raw.get("attack", 0),
-            defense=raw.get("defense", 0),
-            sp_attack=raw.get("sp_attack", 0),
-            sp_defense=raw.get("sp_defense", 0),
-            speed=raw.get("speed", 0),
-        ),
-        height_m=raw.get("height_m", 0.0),
-        weight_kg=raw.get("weight_kg", 0.0),
-        low_kick_power=raw.get("low_kick_power", 0),
-        abilities=raw.get("abilities", []),
-        weaknesses=raw.get("weaknesses", []),
-        resistances=raw.get("resistances", []),
-        sprite_path=raw.get("sprite_path", ""),
-    )
 
 
 def _is_valid_usage_entry(raw: dict) -> bool:
@@ -136,15 +102,15 @@ def _raw_to_usage_entry(raw: dict) -> UsageEntry:
 
 @router.get("/status")
 def data_status():
-    pokemon_list = _usage_repo.get_pokemon_list()
+    pokemon_list = _pokemon_list_repo.get_pokemon_list()
     available_dates = _usage_repo.get_available_dates()
-    pokemon_count = len(pokemon_list.pokemon) if pokemon_list else 0
+    pokemon_count = (len(pokemon_list.pokemons) + len(pokemon_list.mega_pokemons)) if pokemon_list else 0
 
     dates_detail = []
     for date in available_dates:
         usage_data = _usage_repo.get_usage_data_by_date(date)
         if usage_data:
-            top_pokemon = [{"name": p.name} for p in usage_data.pokemon[:3]]
+            top_pokemon = [{"name": p.name} for p in usage_data.pokemons[:3]]
         else:
             top_pokemon = []
         dates_detail.append({
@@ -179,12 +145,9 @@ def get_pokemon_names():
     if _state.selected_date:
         usage_data = _usage_repo.get_usage_data_by_date(_state.selected_date)
         if usage_data:
-            return {"names": [p.name for p in usage_data.pokemon]}
-    pokemon_list = _usage_repo.get_pokemon_list()
+            return {"names": [p.name for p in usage_data.pokemons]}
+    pokemon_list = _pokemon_list_repo.get_pokemon_list()
     if pokemon_list is None:
         return {"names": []}
-    names = [p.name for p in pokemon_list.pokemon]
-    for p in pokemon_list.pokemon:
-        if p.mega_evolution:
-            names.append(p.mega_evolution.name)
+    names = [p.name for p in pokemon_list.pokemons] + [p.name for p in pokemon_list.mega_pokemons]
     return {"names": names}
