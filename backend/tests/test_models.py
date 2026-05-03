@@ -1,17 +1,8 @@
-from domain.entities.pokemon import PokemonInfo, MegaEvolution, BaseStats, RatedItem, EvSpread, UsageEntry, UsageData
+from domain.entities.pokemon import PokemonInfo, BaseStats, RatedItem, EvSpread, UsageEntry, UsageData
 from domain.entities.party import Party, PredictionPattern, PredictionResult
 
 
-def test_pokemon_info_with_mega():
-    mega = MegaEvolution(
-        name="メガリザードンX",
-        types=["ほのお", "ドラゴン"],
-        base_stats=BaseStats(hp=78, attack=130, defense=111, sp_attack=130, sp_defense=85, speed=100),
-        abilities=["かたいツメ"],
-        weaknesses=["じめん", "いわ", "ドラゴン"],
-        resistances=["ほのお", "くさ"],
-        sprite_path="sprites/006-mega-x.png",
-    )
+def test_pokemon_info():
     p = PokemonInfo(
         pokedex_id=6,
         name="リザードン",
@@ -21,31 +12,16 @@ def test_pokemon_info_with_mega():
         weight_kg=90.5,
         low_kick_power=100,
         abilities=["もうか", "サンパワー"],
-        weaknesses=["いわ", "みず", "でんき"],
-        resistances=["くさ", "かくとう"],
+        no_effect_types=["じめん"],
+        quarter_damage_types=[],
+        half_damage_types=["くさ", "かくとう", "むし", "ほのお", "フェアリー"],
+        double_damage_types=["いわ", "でんき", "みず"],
+        quad_damage_types=[],
         sprite_path="sprites/006.png",
-        mega_evolution=mega,
     )
     assert p.name == "リザードン"
-    assert p.mega_evolution.name == "メガリザードンX"
-
-
-def test_pokemon_info_without_mega():
-    p = PokemonInfo(
-        pokedex_id=1,
-        name="フシギダネ",
-        types=["くさ", "どく"],
-        base_stats=BaseStats(hp=45, attack=49, defense=49, sp_attack=65, sp_defense=65, speed=45),
-        height_m=0.7,
-        weight_kg=6.9,
-        low_kick_power=20,
-        abilities=["しんりょく"],
-        weaknesses=["ほのお", "ひこう"],
-        resistances=["くさ", "みず"],
-        sprite_path="sprites/001.png",
-        mega_evolution=None,
-    )
-    assert p.mega_evolution is None
+    assert p.no_effect_types == ["じめん"]
+    assert p.double_damage_types == ["いわ", "でんき", "みず"]
 
 
 def test_usage_entry():
@@ -64,10 +40,10 @@ def test_usage_entry():
 
 
 def test_prediction_pattern():
-    pattern = PredictionPattern(pokemon=["リザードン", "カメックス", "フシギバナ"])
-    assert len(pattern.pokemon) == 3
+    pattern = PredictionPattern(pokemons=["リザードン", "カメックス", "フシギバナ"])
+    assert len(pattern.pokemons) == 3
 
 
 def test_party():
-    party = Party(id="p1", name="メインパーティ", pokemon=["リザードン", "カメックス", "フシギバナ", "ピカチュウ", "ゲンガー", "カビゴン"])
-    assert len(party.pokemon) == 6
+    party = Party(id="p1", name="メインパーティ", pokemons=["リザードン", "カメックス", "フシギバナ", "ピカチュウ", "ゲンガー", "カビゴン"])
+    assert len(party.pokemons) == 6

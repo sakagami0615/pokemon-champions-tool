@@ -10,7 +10,7 @@ _repo = JsonPartyRepository()
 
 class PartyCreateRequest(BaseModel):
     name: str
-    pokemon: list[str]
+    pokemons: list[str]
 
 
 @router.get("")
@@ -21,7 +21,7 @@ def list_parties() -> PartiesData:
 @router.post("")
 def create_party(req: PartyCreateRequest) -> Party:
     data = _repo.get_all()
-    party = Party(id=str(uuid.uuid4()), name=req.name, pokemon=req.pokemon)
+    party = Party(id=str(uuid.uuid4()), name=req.name, pokemons=req.pokemons)
     updated = PartiesData(parties=[*data.parties, party], last_used_id=data.last_used_id)
     _repo.save(updated)
     return party
@@ -33,7 +33,7 @@ def update_party(party_id: str, req: PartyCreateRequest) -> Party:
     parties = data.parties
     for i, p in enumerate(parties):
         if p.id == party_id:
-            updated_party = Party(id=party_id, name=req.name, pokemon=req.pokemon)
+            updated_party = Party(id=party_id, name=req.name, pokemons=req.pokemons)
             new_parties = [*parties[:i], updated_party, *parties[i + 1:]]
             _repo.save(PartiesData(parties=new_parties, last_used_id=data.last_used_id))
             return updated_party

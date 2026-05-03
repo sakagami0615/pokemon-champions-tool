@@ -32,7 +32,7 @@ export function useParty(): UsePartyReturn {
       if (data.last_used_id) {
         const last = data.parties.find((p) => p.id === data.last_used_id)
         if (last) {
-          setMyParty([...last.pokemon, ...Array(6).fill('')].slice(0, 6))
+          setMyParty([...last.pokemons, ...Array(6).fill('')].slice(0, 6))
           setSelectedPartyId(last.id)
         }
       }
@@ -46,7 +46,7 @@ export function useParty(): UsePartyReturn {
   }, [reload])
 
   const selectParty = async (party: Party) => {
-    setMyParty([...party.pokemon, ...Array(6).fill('')].slice(0, 6))
+    setMyParty([...party.pokemons, ...Array(6).fill('')].slice(0, 6))
     setSelectedPartyId(party.id)
     await setLastUsedParty(party.id)
   }

@@ -40,7 +40,7 @@ class PredictUseCase:
         usage_data: UsageData,
     ) -> str:
         usage_summary = []
-        for entry in usage_data.pokemon:
+        for entry in usage_data.pokemons:
             if entry.name in opponent_party:
                 top_moves = ", ".join(f"{m.name}({m.rate}%)" for m in entry.moves[:3])
                 top_items = ", ".join(f"{i.name}({i.rate}%)" for i in entry.items[:2])
@@ -67,7 +67,7 @@ class PredictUseCase:
                 names = [n.strip() for n in m.group(1).split(",")][:3]
                 while len(names) < 3:
                     names.append("")
-                patterns.append(PredictionPattern(pokemon=names))
+                patterns.append(PredictionPattern(pokemons=names))
         while len(patterns) < 3:
-            patterns.append(PredictionPattern(pokemon=["", "", ""]))
+            patterns.append(PredictionPattern(pokemons=["", "", ""]))
         return PredictionResult(patterns=patterns[:3])

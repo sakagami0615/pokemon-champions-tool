@@ -24,6 +24,7 @@ backend/data/parties.json
 backend/data/pokemon_list.json
 backend/data/usage_rates/
 backend/data/sprites/
+backend/scripts/output/
 
 # Frontend
 frontend/node_modules

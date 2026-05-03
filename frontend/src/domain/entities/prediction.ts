@@ -1,5 +1,5 @@
 export interface PredictionPattern {
-  pokemon: string[]
+  pokemons: string[]
 }
 
 export interface PredictionResult {

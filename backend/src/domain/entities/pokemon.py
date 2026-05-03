@@ -21,16 +21,6 @@ class EvSpread(BaseModel):
     rate: float
 
 
-class MegaEvolution(BaseModel):
-    name: str
-    types: list[str]
-    base_stats: BaseStats
-    abilities: list[str]
-    weaknesses: list[str]
-    resistances: list[str]
-    sprite_path: str
-
-
 class PokemonInfo(BaseModel):
     pokedex_id: int
     name: str
@@ -40,10 +30,12 @@ class PokemonInfo(BaseModel):
     weight_kg: float
     low_kick_power: int
     abilities: list[str]
-    weaknesses: list[str]
-    resistances: list[str]
+    no_effect_types: list[str]
+    quarter_damage_types: list[str]
+    half_damage_types: list[str]
+    double_damage_types: list[str]
+    quad_damage_types: list[str]
     sprite_path: str
-    mega_evolution: Optional[MegaEvolution] = None
 
 
 class UsageEntry(BaseModel):
@@ -62,9 +54,10 @@ class UsageData(BaseModel):
     season: int
     regulation: str
     source_updated_at: str
-    pokemon: list[UsageEntry]
+    pokemons: list[UsageEntry]
 
 
 class PokemonList(BaseModel):
     collected_at: str
-    pokemon: list[PokemonInfo]
+    pokemons: list[PokemonInfo]
+    mega_pokemons: list[PokemonInfo]

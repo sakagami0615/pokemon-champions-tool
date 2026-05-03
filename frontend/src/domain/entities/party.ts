@@ -1,7 +1,7 @@
 export interface Party {
   id: string
   name: string
-  pokemon: string[]
+  pokemons: string[]
 }
 
 export interface PartiesData {
