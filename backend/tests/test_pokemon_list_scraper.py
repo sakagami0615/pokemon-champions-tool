@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from bs4 import BeautifulSoup
 from domain.entities.pokemon import PokemonInfo
 from infrastructure.external.pokemon_list_scraper import PokemonListScraper
@@ -156,7 +156,7 @@ def test_group_entries_separates_normal_and_mega(scraper: PokemonListScraper) ->
     assert megas[0] == (3, "メガフシギバナ", "https://gamewith.jp/pokemon-champions/553140", "003-mega-1.png")
 
 
-def test_parse_detail_page_base_stats(scraper: PokemonListScraper, tmp_path: Path) -> None:
+def test_parse_detail_page_base_stats(scraper: PokemonListScraper) -> None:
     with patch.object(scraper, "_download_sprite", return_value="sprites/003.png"):
         info = scraper._parse_detail_page(_make_detail_soup(), pokedex_id=3, name="フシギバナ", sprite_filename="003.png")
     assert info.base_stats.hp == 80

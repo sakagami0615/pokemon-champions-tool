@@ -25,20 +25,18 @@ class PokemonListScraper(BaseScraper):
         list_soup = self._fetch(POKEMON_LIST_URL)
         entries = self._parse_list_page(list_soup)
         normals, megas = self._group_entries(entries)
+        return (
+            self._fetch_all(normals),
+            self._fetch_all(megas),
+        )
 
-        pokemons: list[PokemonInfo] = []
-        for pokedex_id, name, url, sprite_filename in normals:
+    def _fetch_all(self, grouped: list[tuple[int, str, str, str]]) -> list[PokemonInfo]:
+        result: list[PokemonInfo] = []
+        for pokedex_id, name, url, sprite_filename in grouped:
             detail_soup = self._fetch(url)
             info = self._parse_detail_page(detail_soup, pokedex_id=pokedex_id, name=name, sprite_filename=sprite_filename)
-            pokemons.append(info)
-
-        mega_pokemons: list[PokemonInfo] = []
-        for pokedex_id, name, url, sprite_filename in megas:
-            detail_soup = self._fetch(url)
-            info = self._parse_detail_page(detail_soup, pokedex_id=pokedex_id, name=name, sprite_filename=sprite_filename)
-            mega_pokemons.append(info)
-
-        return pokemons, mega_pokemons
+            result.append(info)
+        return result
 
     def _parse_list_page(self, soup: BeautifulSoup) -> list[tuple[int, str, str]]:
         entries: list[tuple[int, str, str]] = []
