@@ -11,21 +11,18 @@
   "pokemons": [
     {
       "name": "リザードン",
-      "moves": [{"name": "かえんほうしゃ", "rate": 78}],
-      "items": [{"name": "いのちのたま", "rate": 61}],
-      "abilities": [{"name": "もうか", "rate": 82}],
-      "natures": [{"name": "ひかえめ", "rate": 67}],
-      "teammates": [],
+      "abilities": [{"name": "もうか", "rate": 82}, ...],
+      "moves": [{"name": "かえんほうしゃ", "rate": 78}, ...],
+      "items": [{"name": "いのちのたま", "rate": 61}, ...],
+      "natures": [{"name": "ひかえめ", "rate": 67}, ...],
       "evs": [
-        {"spread": {"H": 0, "A": 0, "B": 0, "C": 252, "D": 4, "S": 252}, "rate": 52}
-      ],
-      "ivs": {"H": 31, "A": 0, "B": 31, "C": 31, "D": 31, "S": 31}
+        {"spread": {"H": 0, "A": 0, "B": 0, "C": 252, "D": 4, "S": 252}, "rate": 52},
+        ...
+      ]
     }
   ]
 }
 ```
-
-`ivs` は GameWith に記載がある場合は実値、ない場合は `null`（表示時に競技標準値で補完）。
 
 ## 内定ポケモン一覧（pokemon_list.json）
 

@@ -13,22 +13,29 @@ backend/
 │   │   │   ├── party.py               # パーティエンティティ
 │   │   │   └── pokemon.py             # ポケモンエンティティ
 │   │   └── repositories/
-│   │       ├── image_recognizer.py    # 画像認識リポジトリインターフェース
-│   │       ├── party_repository.py    # パーティリポジトリインターフェース
-│   │       └── usage_repository.py    # 使用率データリポジトリインターフェース
+│   │       ├── image_recognizer.py        # 画像認識リポジトリインターフェース
+│   │       ├── party_repository.py        # パーティリポジトリインターフェース
+│   │       ├── pokemon_list_repository.py # 内定ポケモン一覧リポジトリインターフェース
+│   │       └── usage_repository.py        # 使用率データリポジトリインターフェース
 │   ├── application/
 │   │   ├── state/
-│   │   │   └── scraping_state.py      # スクレイピング実行状態（インメモリ）
+│   │   │   └── scraping_state.py              # スクレイピング実行状態（インメモリ）
 │   │   └── use_cases/
-│   │       ├── predict_use_case.py    # 選出予想ユースケース
-│   │       └── recognition_use_case.py # 画像認識ユースケース
+│   │       ├── predict_use_case.py            # 選出予想ユースケース
+│   │       ├── recognition_use_case.py        # 画像認識ユースケース
+│   │       └── scrape_pokemon_list_use_case.py # 内定ポケモン一覧スクレイピングユースケース
 │   ├── infrastructure/
 │   │   ├── external/
+│   │   │   ├── ai_predictor.py        # Claude API 呼び出し集約（LLM切り替え口）
+│   │   │   ├── base_scraper.py        # スクレイパー基底クラス
+│   │   │   ├── constants.py           # スクレイピング定数
 │   │   │   ├── image_recognition.py   # OpenCV テンプレートマッチング実装
-│   │   │   └── scraper.py             # GameWith スクレイピング実装
+│   │   │   ├── pokemon_list_scraper.py # 内定ポケモン一覧スクレイパー実装
+│   │   │   └── scraper.py             # GameWith 使用率スクレイパー実装
 │   │   └── persistence/
-│   │       ├── json_party_repository.py  # パーティ JSON 永続化実装
-│   │       └── json_usage_repository.py  # 使用率データ JSON 永続化実装
+│   │       ├── json_party_repository.py          # パーティ JSON 永続化実装
+│   │       ├── json_pokemon_list_repository.py   # 内定ポケモン一覧 JSON 永続化実装
+│   │       └── json_usage_repository.py          # 使用率データ JSON 永続化実装
 │   └── presentation/
 │       └── routers/
 │           ├── data.py                # データ取得・ステータス・日付選択エンドポイント
@@ -37,12 +44,16 @@ backend/
 │           └── recognition.py         # 画像認識エンドポイント
 ├── tests/                   # テストコード（src/ の外）
 │   ├── conftest.py
+│   ├── test_base_scraper.py
 │   ├── test_image_recognition.py
 │   ├── test_json_party_repository.py
+│   ├── test_json_pokemon_list_repository.py
 │   ├── test_json_usage_repository.py
 │   ├── test_models.py
+│   ├── test_pokemon_list_scraper.py
 │   ├── test_predict_use_case.py
 │   ├── test_routers.py
+│   ├── test_scrape_pokemon_list_use_case.py
 │   └── test_scraper.py
 ├── data/                    # 永続化データ（バージョン管理外）
 │   ├── sprites/             # ポケモンスプライト画像
