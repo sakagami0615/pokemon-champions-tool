@@ -26,7 +26,7 @@ def _make_usage_data():
         season=1,
         regulation="レギュレーションA",
         source_updated_at="2026-04-26",
-        pokemon=[entry],
+        pokemons=[entry],
     )
 
 
@@ -47,8 +47,8 @@ def test_predict_returns_three_patterns(mock_anthropic_cls):
 
     assert isinstance(result, PredictionResult)
     assert len(result.patterns) == 3
-    assert len(result.patterns[0].pokemon) == 3
-    assert result.patterns[0].pokemon[0] == "リザードン"
+    assert len(result.patterns[0].pokemons) == 3
+    assert result.patterns[0].pokemons[0] == "リザードン"
 
 
 @patch("application.use_cases.predict_use_case.anthropic.Anthropic")
