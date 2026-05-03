@@ -8,7 +8,7 @@
   "season": 1,
   "regulation": "レギュレーションA",
   "source_updated_at": "2026-04-25",
-  "pokemon": [
+  "pokemons": [
     {
       "name": "リザードン",
       "moves": [{"name": "かえんほうしゃ", "rate": 78}],
@@ -32,7 +32,7 @@
 ```json
 {
   "collected_at": "2026-04-26T12:00:00",
-  "pokemon": [
+  "pokemons": [
     {
       "pokedex_id": 6,
       "name": "リザードン",
@@ -45,16 +45,37 @@
       "weight_kg": 90.5,
       "low_kick_power": 100,
       "abilities": ["もうか", "サンパワー"],
-      "weaknesses": ["いわ", "みず", "でんき"],
-      "resistances": ["くさ", "かくとう", "むし", "はがね", "ほのお", "フェアリー"],
-      "sprite_path": "sprites/006.png",
-      "mega_evolution": null
+      "no_effect_types": ["じめん"],
+      "quarter_damage_types": [],
+      "half_damage_types": ["くさ", "かくとう", "むし", "ほのお", "フェアリー"],
+      "double_damage_types": ["いわ", "でんき", "みず"],
+      "sprite_path": "sprites/006.png"
+    }
+  ],
+  "mega_pokemons": [
+    {
+      "pokedex_id": 6,
+      "name": "メガリザードンX",
+      "types": ["ほのお", "ドラゴン"],
+      "base_stats": {
+        "hp": 78, "attack": 130, "defense": 111,
+        "sp_attack": 130, "sp_defense": 85, "speed": 100
+      },
+      "height_m": 1.7,
+      "weight_kg": 110.5,
+      "low_kick_power": 100,
+      "abilities": ["かたいツメ"],
+      "no_effect_types": ["じめん"],
+      "quarter_damage_types": [],
+      "half_damage_types": ["くさ", "かくとう", "むし", "ほのお", "フェアリー"],
+      "double_damage_types": ["いわ", "ドラゴン"],
+      "sprite_path": "sprites/006-mega-1.png"
     }
   ]
 }
 ```
 
-`mega_evolution` はメガシンカしないポケモンは `null`。
+通常ポケモンは `pokemons`、メガシンカポケモンは `mega_pokemons` に格納する。タイプ相性は4区分に分類する（`no_effect_types`: x0無効、`quarter_damage_types`: x0.25、`half_damage_types`: x0.5、`double_damage_types`: x2弱点）。
 
 ## パーティデータ（parties.json）
 
@@ -64,7 +85,7 @@
     {
       "id": "party-1",
       "name": "メインパーティ",
-      "pokemon": ["リザードン", "カメックス", "フシギバナ", "ピカチュウ", "ゲンガー", "カビゴン"]
+      "pokemons": ["リザードン", "カメックス", "フシギバナ", "ピカチュウ", "ゲンガー", "カビゴン"]
     }
   ]
 }
