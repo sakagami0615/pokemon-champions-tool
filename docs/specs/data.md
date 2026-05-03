@@ -49,6 +49,7 @@
       "quarter_damage_types": [],
       "half_damage_types": ["くさ", "かくとう", "むし", "ほのお", "フェアリー"],
       "double_damage_types": ["いわ", "でんき", "みず"],
+      "quad_damage_types": [],
       "sprite_path": "sprites/006.png"
     }
   ],
@@ -69,13 +70,14 @@
       "quarter_damage_types": [],
       "half_damage_types": ["くさ", "かくとう", "むし", "ほのお", "フェアリー"],
       "double_damage_types": ["いわ", "ドラゴン"],
+      "quad_damage_types": [],
       "sprite_path": "sprites/006-mega-1.png"
     }
   ]
 }
 ```
 
-通常ポケモンは `pokemons`、メガシンカポケモンは `mega_pokemons` に格納する。タイプ相性は4区分に分類する（`no_effect_types`: x0無効、`quarter_damage_types`: x0.25、`half_damage_types`: x0.5、`double_damage_types`: x2弱点）。
+通常ポケモンは `pokemons`、メガシンカポケモンは `mega_pokemons` に格納する。タイプ相性は5区分に分類する（`no_effect_types`: x0無効、`quarter_damage_types`: x0.25、`half_damage_types`: x0.5、`double_damage_types`: x2弱点、`quad_damage_types`: x4弱点）。
 
 ## パーティデータ（parties.json）
 

@@ -18,6 +18,7 @@ def _make_pokemon_info() -> PokemonInfo:
         quarter_damage_types=["くさ"],
         half_damage_types=["みず"],
         double_damage_types=["ほのお"],
+        quad_damage_types=[],
         sprite_path="sprites/003.png",
     )
 

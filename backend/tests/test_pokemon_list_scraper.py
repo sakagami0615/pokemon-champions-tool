@@ -7,32 +7,10 @@ from infrastructure.external.pokemon_list_scraper import PokemonListScraper
 
 LIST_HTML = """
 <html><body>
-<ol class="w-pokemon-list">
-  <li class="w-pokemon-list-element">
-    <div class="_inner">
-      <div class="_inner-header">
-        <span class="_no">No.0003</span>
-        <a href="https://gamewith.jp/pokemon-champions/553138" class="_name">フシギバナ</a>
-      </div>
-    </div>
-  </li>
-  <li class="w-pokemon-list-element">
-    <div class="_inner">
-      <div class="_inner-header">
-        <span class="_no">No.0003</span>
-        <a href="https://gamewith.jp/pokemon-champions/553140" class="_name">メガフシギバナ</a>
-      </div>
-    </div>
-  </li>
-  <li class="w-pokemon-list-element">
-    <div class="_inner">
-      <div class="_inner-header">
-        <span class="_no">No.0006</span>
-        <a href="https://gamewith.jp/pokemon-champions/553141" class="_name">リザードン</a>
-      </div>
-    </div>
-  </li>
-</ol>
+<script>
+if(window.wmt===undefined){window.wmt={};}
+window.wmt.pokemonDatas=[{id:'3',idx:1,aid:'553138',no:'0003',n:'フシギバナ',i:'003.png',t1:'くさ',t2:'どく',mvs:'1,2,3'},{id:'3m',idx:2,aid:'553140',no:'0003',n:'メガフシギバナ',i:'003.png',t1:'くさ',t2:'どく',mvs:'1,2,3'},{id:'6',idx:3,aid:'553141',no:'0006',n:'リザードン',i:'006.png',t1:'ほのお',t2:'ひこう',mvs:'1,2,3'}];
+</script>
 </body></html>
 """
 
@@ -50,7 +28,8 @@ DETAIL_HTML = """
           フシギバナ
           <hr/>
           <div class="_type">
-            <img alt="くさ" /><img alt="どく" />
+            <img alt="くさ" /><noscript><img alt="くさ" /></noscript>
+            <img alt="どく" /><noscript><img alt="どく" /></noscript>
           </div>
         </div>
       </td>
@@ -100,21 +79,32 @@ DETAIL_HTML = """
 <ol class="_pokechamp_pkm_typechart">
   <li data-attr="x2">
     <div class="_inner"><div class="_inner-body">
-      <img alt="ほのお"/><img alt="こおり"/><img alt="ひこう"/><img alt="エスパー"/>
+      <img alt="ほのお"/><noscript><img alt="ほのお"/></noscript>
+      <img alt="こおり"/><noscript><img alt="こおり"/></noscript>
+      <img alt="ひこう"/><noscript><img alt="ひこう"/></noscript>
+      <img alt="エスパー"/><noscript><img alt="エスパー"/></noscript>
     </div></div>
   </li>
   <li data-attr="x0.5">
     <div class="_inner"><div class="_inner-body">
-      <img alt="みず"/><img alt="でんき"/><img alt="かくとう"/><img alt="フェアリー"/>
+      <img alt="みず"/><noscript><img alt="みず"/></noscript>
+      <img alt="でんき"/><noscript><img alt="でんき"/></noscript>
+      <img alt="かくとう"/><noscript><img alt="かくとう"/></noscript>
+      <img alt="フェアリー"/><noscript><img alt="フェアリー"/></noscript>
     </div></div>
   </li>
   <li data-attr="x0.25">
     <div class="_inner"><div class="_inner-body">
-      <img alt="くさ"/>
+      <img alt="くさ"/><noscript><img alt="くさ"/></noscript>
     </div></div>
   </li>
   <li data-attr="x0">
     <div class="_inner"><div class="_inner-body"></div></div>
+  </li>
+  <li data-attr="x4">
+    <div class="_inner"><div class="_inner-body">
+      <img alt="でんき"/><noscript><img alt="でんき"/></noscript>
+    </div></div>
   </li>
 </ol>
 </body></html>
@@ -199,6 +189,7 @@ def test_parse_detail_page_type_chart(scraper: PokemonListScraper) -> None:
     assert info.half_damage_types == ["みず", "でんき", "かくとう", "フェアリー"]
     assert info.quarter_damage_types == ["くさ"]
     assert info.no_effect_types == []
+    assert info.quad_damage_types == ["でんき"]
 
 
 def test_fetch_pokemon_list_splits_normals_and_megas(scraper: PokemonListScraper) -> None:

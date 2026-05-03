@@ -246,6 +246,7 @@ async def test_data_status_dates_detail_structure():
                 height_m=0.4, weight_kg=6.0, low_kick_power=20,
                 abilities=["せいでんき"],
                 no_effect_types=[], quarter_damage_types=[], half_damage_types=["でんき"], double_damage_types=["じめん"],
+                quad_damage_types=[],
                 sprite_path="sprites/025.png"
             )
         ],

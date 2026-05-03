@@ -16,6 +16,7 @@ def test_pokemon_info():
         quarter_damage_types=[],
         half_damage_types=["くさ", "かくとう", "むし", "ほのお", "フェアリー"],
         double_damage_types=["いわ", "でんき", "みず"],
+        quad_damage_types=[],
         sprite_path="sprites/006.png",
     )
     assert p.name == "リザードン"

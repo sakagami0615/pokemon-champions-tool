@@ -34,6 +34,7 @@ class PokemonInfo(BaseModel):
     quarter_damage_types: list[str]
     half_damage_types: list[str]
     double_damage_types: list[str]
+    quad_damage_types: list[str]
     sprite_path: str
 
 

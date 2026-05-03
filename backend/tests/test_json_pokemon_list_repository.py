@@ -18,6 +18,7 @@ def _make_pokemon_info(name: str = "フシギバナ", pokedex_id: int = 3) -> Po
         quarter_damage_types=["くさ"],
         half_damage_types=["みず", "でんき", "かくとう", "フェアリー"],
         double_damage_types=["ほのお", "こおり", "ひこう", "エスパー"],
+        quad_damage_types=[],
         sprite_path="sprites/003.png",
     )
 

@@ -1,8 +1,11 @@
+import logging
 import re
 from bs4 import BeautifulSoup
 from domain.entities.pokemon import PokemonInfo, BaseStats
 from infrastructure.external.base_scraper import BaseScraper
 from infrastructure.external.constants import POKEMON_LIST_URL
+
+_logger = logging.getLogger(__name__)
 
 _STAT_KEY_MAP = {
     "HP": "hp",
@@ -17,39 +20,58 @@ _TYPE_ATTR_MAP = {
     "x0.25": "quarter_damage_types",
     "x0.5":  "half_damage_types",
     "x2":    "double_damage_types",
+    "x4":    "quad_damage_types",
 }
 
 
 class PokemonListScraper(BaseScraper):
     def fetch_pokemon_list(self) -> tuple[list[PokemonInfo], list[PokemonInfo]]:
+        _logger.info("内定ポケモン一覧ページを取得中...")
         list_soup = self._fetch(POKEMON_LIST_URL)
         entries = self._parse_list_page(list_soup)
         normals, megas = self._group_entries(entries)
-        return (
-            self._fetch_all(normals),
-            self._fetch_all(megas),
-        )
+        _logger.info("一覧取得完了: 通常 %d 体 / メガ %d 体", len(normals), len(megas))
+        _logger.info("通常ポケモンの詳細を取得中...")
+        normal_list = self._fetch_all(normals)
+        _logger.info("メガシンカポケモンの詳細を取得中...")
+        mega_list = self._fetch_all(megas)
+        return normal_list, mega_list
 
     def _fetch_all(self, grouped: list[tuple[int, str, str, str]]) -> list[PokemonInfo]:
+        total = len(grouped)
         result: list[PokemonInfo] = []
-        for pokedex_id, name, url, sprite_filename in grouped:
+        for i, (pokedex_id, name, url, sprite_filename) in enumerate(grouped, 1):
+            _logger.info("[%3d/%3d] %s を取得中...", i, total, name)
             detail_soup = self._fetch(url)
             info = self._parse_detail_page(detail_soup, pokedex_id=pokedex_id, name=name, sprite_filename=sprite_filename)
             result.append(info)
         return result
 
     def _parse_list_page(self, soup: BeautifulSoup) -> list[tuple[int, str, str]]:
+        script_text = next(
+            (s.string for s in soup.select("script:not([src])")
+             if "window.wmt.pokemonDatas" in (s.string or "")),
+            None,
+        )
+        if not script_text:
+            return []
+
+        match = re.search(r"window\.wmt\.pokemonDatas=(\[.*?\]);", script_text, re.DOTALL)
+        if not match:
+            return []
+
+        raw = match.group(1)
         entries: list[tuple[int, str, str]] = []
-        for li in soup.select("ol.w-pokemon-list li.w-pokemon-list-element"):
-            no_el = li.select_one("span._no")
-            name_el = li.select_one("a._name")
-            if not no_el or not name_el:
+        for m in re.finditer(r"\{([^}]+)\}", raw):
+            obj_str = m.group(1)
+            no_m = re.search(r"\bno:'(\d+)'", obj_str)
+            n_m = re.search(r"\bn:'([^']+)'", obj_str)
+            aid_m = re.search(r"\baid:'(\d+)'", obj_str)
+            if not (no_m and n_m and aid_m):
                 continue
-            pokedex_id = int(no_el.get_text(strip=True).replace("No.", ""))
-            name = name_el.get_text(strip=True)
-            url = name_el["href"]
-            if not url.startswith("http"):
-                url = f"https://gamewith.jp{url}"
+            pokedex_id = int(no_m.group(1))
+            name = n_m.group(1)
+            url = f"https://gamewith.jp/pokemon-champions/{aid_m.group(1)}"
             entries.append((pokedex_id, name, url))
         return entries
 
@@ -73,7 +95,10 @@ class PokemonListScraper(BaseScraper):
     def _parse_detail_page(self, soup: BeautifulSoup, pokedex_id: int, name: str, sprite_filename: str) -> PokemonInfo:
         status_table = soup.select_one("table._pokechamp_pkm_status")
 
-        types = [img["alt"] for img in status_table.select("td.icon div._type img[alt]")]
+        types = [
+            img["alt"] for img in status_table.select("td.icon div._type img[alt]")
+            if img.parent.name != "noscript"
+        ]
 
         raw_stats: dict[str, int] = {}
         for tr in status_table.select("tr"):
@@ -109,12 +134,16 @@ class PokemonListScraper(BaseScraper):
             "quarter_damage_types": [],
             "half_damage_types": [],
             "double_damage_types": [],
+            "quad_damage_types": [],
         }
         for li in soup.select("ol._pokechamp_pkm_typechart li"):
             attr = li.get("data-attr")
             field = _TYPE_ATTR_MAP.get(attr)
             if field:
-                type_chart[field] = [img["alt"] for img in li.select("img[alt]")]
+                type_chart[field] = [
+                    img["alt"] for img in li.select("img[alt]")
+                    if img.parent.name != "noscript"
+                ]
 
         icon_img = status_table.select_one("td.icon img")
         sprite_url = icon_img.get("data-original") or icon_img.get("src", "")
