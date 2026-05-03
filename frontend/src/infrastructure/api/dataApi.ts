@@ -1,3 +1,5 @@
+import type { PokemonListEntry } from '../../domain/entities/pokemon'
+
 const BASE = '/api'
 
 export interface TopPokemon {
@@ -51,4 +53,15 @@ export async function getPokemonNames(): Promise<string[]> {
   if (!res.ok) throw new Error(await res.text())
   const data = await res.json()
   return data.names as string[]
+}
+
+export interface PokemonListResponse {
+  pokemons: PokemonListEntry[]
+  mega_pokemons: PokemonListEntry[]
+}
+
+export async function getPokemonList(): Promise<PokemonListResponse> {
+  const res = await fetch(`${BASE}/data/pokemon-list`)
+  if (!res.ok) throw new Error(await res.text())
+  return res.json()
 }

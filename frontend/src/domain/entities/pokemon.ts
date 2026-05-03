@@ -18,3 +18,19 @@ export interface UsageEntry {
   evs: EvSpread[]
   ivs: Record<string, number> | null
 }
+
+export interface BaseStats {
+  hp: number
+  attack: number
+  defense: number
+  sp_attack: number
+  sp_defense: number
+  speed: number
+}
+
+export interface PokemonListEntry {
+  pokedex_id: number
+  name: string
+  sprite_path: string
+  base_stats: BaseStats
+}
