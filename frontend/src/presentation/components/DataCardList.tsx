@@ -13,7 +13,7 @@ export default function DataCardList({ details, selectedDate, onSelect }: Props)
   }
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-y-auto max-h-96 space-y-2 p-2">
+    <div className="overflow-y-auto max-h-96 space-y-2 p-2">
       {details.map((detail) => (
         <DataCard
           key={detail.date}

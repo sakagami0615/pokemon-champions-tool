@@ -54,7 +54,7 @@ export default function PredictionPage() {
           </div>
         )}
         {selectedPartyId && (
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 justify-items-center pt-1 border-t dark:border-gray-700">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 justify-items-center pt-4 border-t dark:border-gray-700">
             {myParty.filter(Boolean).map((pokemon, i) => {
               const spriteSrc = pokemonList.find((e) => e.name === pokemon)?.sprite_path
               return (
