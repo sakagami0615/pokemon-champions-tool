@@ -11,7 +11,7 @@ export default function PredictionPage() {
   const [opponentParty, setOpponentParty] = useState<string[]>(Array(6).fill(''))
   const { result, loading, error, handlePredict } = usePredict()
   const { parties, selectedPartyId, myParty, selectParty } = useParty()
-  const { pokemonNames, pokemonList } = usePokemonData()
+  const { pokemonList } = usePokemonData()
   const { recognizeImage } = useRecognition()
   const { status } = useDataManagement()
 
@@ -30,7 +30,7 @@ export default function PredictionPage() {
         </p>
       )}
 
-      <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonNames={pokemonNames} onImageUpload={recognizeImage} />
+      <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonList={pokemonList} onImageUpload={recognizeImage} />
 
       <div>
         <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400 mb-2">自分のパーティ</h2>

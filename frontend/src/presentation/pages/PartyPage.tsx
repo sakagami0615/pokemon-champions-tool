@@ -7,7 +7,7 @@ import type { Party } from '../../domain/entities/party'
 
 export default function PartyPage() {
   const { parties, createNewParty, updateExistingParty, removeParty } = useParty()
-  const { pokemonNames } = usePokemonData()
+  const { pokemonList } = usePokemonData()
   const { status } = useDataManagement()
   const [editing, setEditing] = useState<Party | null>(null)
   const [name, setName] = useState('')
@@ -71,7 +71,7 @@ export default function PartyPage() {
               key={i}
               value={p}
               onChange={(v) => setPokemon(pokemon.map((p, j) => (j === i ? v : p)))}
-              pokemonNames={pokemonNames}
+              pokemonList={pokemonList}
             />
           ))}
         </div>
@@ -109,19 +109,21 @@ export default function PartyPage() {
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">
-              {p.pokemons.map((pname, i) => (
-                <div key={i} className="text-center">
-                  <img
-                    src={`/sprites/${pname}.png`}
-                    alt={pname}
-                    className="w-10 h-10 object-contain mx-auto"
-                    onError={(e) => {
-                      ;(e.target as HTMLImageElement).style.display = 'none'
-                    }}
-                  />
-                  <div className="text-xs">{pname}</div>
-                </div>
-              ))}
+              {p.pokemons.map((pname, i) => {
+                const spriteSrc = pokemonList.find((e) => e.name === pname)?.sprite_path
+                return (
+                  <div key={i} className="text-center">
+                    {spriteSrc && (
+                      <img
+                        src={`/${spriteSrc}`}
+                        alt={pname}
+                        className="w-10 h-10 object-contain mx-auto"
+                      />
+                    )}
+                    <div className="text-xs">{pname}</div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         ))}

@@ -17,7 +17,7 @@ export default function PokemonPanelGrid({ pokemonList }: Props) {
           className="flex flex-col items-center gap-1 p-2 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 w-20"
         >
           <img
-            src={`/sprites/${pokemon.name}.png`}
+            src={`/${pokemon.sprite_path}`}
             alt={pokemon.name}
             className="w-12 h-12 object-contain"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}

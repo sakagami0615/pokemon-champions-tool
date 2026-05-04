@@ -31,7 +31,9 @@ function StatRow({ label, items }: { label: string; items: { name: string; rate:
 }
 
 export default function PokemonCard({ name, usage, pokemonList }: Props) {
-  const baseStats = pokemonList.find((p) => p.name === name)?.base_stats ?? null
+  const entry = pokemonList.find((p) => p.name === name)
+  const spriteSrc = entry ? `/${entry.sprite_path}` : null
+  const baseStats = entry?.base_stats ?? null
   const baseStatsText = baseStats
     ? `H${baseStats.hp} A${baseStats.attack} B${baseStats.defense} C${baseStats.sp_attack} D${baseStats.sp_defense} S${baseStats.speed}`
     : null
@@ -40,12 +42,13 @@ export default function PokemonCard({ name, usage, pokemonList }: Props) {
     <div className="flex-1 rounded-lg p-3 bg-gray-50 dark:bg-gray-800 min-w-0">
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-shrink-0 text-center">
-          <img
-            src={`/sprites/${name}.png`}
-            alt={name}
-            className="w-14 h-14 object-contain mx-auto"
-            onError={(e) => { (e.target as HTMLImageElement).src = '/sprites/unknown.png' }}
-          />
+          {spriteSrc && (
+            <img
+              src={spriteSrc}
+              alt={name}
+              className="w-14 h-14 object-contain mx-auto"
+            />
+          )}
           <div className="text-xs font-bold mt-1">{name}</div>
         </div>
         <div className="flex-1 min-w-0 text-xs">

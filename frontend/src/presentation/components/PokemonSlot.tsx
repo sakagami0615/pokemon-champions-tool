@@ -1,23 +1,27 @@
+import type { PokemonListEntry } from '../../domain/entities/pokemon'
+
 interface Props {
   value: string
   onChange: (name: string) => void
-  pokemonNames: string[]
+  pokemonList: PokemonListEntry[]
 }
 
-export default function PokemonSlot({ value, onChange, pokemonNames }: Props) {
+export default function PokemonSlot({ value, onChange, pokemonList }: Props) {
   if (value) {
+    const spriteSrc = pokemonList.find((p) => p.name === value)?.sprite_path
     return (
       <div
         className="flex flex-col items-center gap-1 p-2 rounded-lg border-2 border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 cursor-pointer"
         onClick={() => onChange('')}
         title="クリックでリセット"
       >
-        <img
-          src={`/sprites/${value}.png`}
-          alt={value}
-          className="w-12 h-12 object-contain"
-          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-        />
+        {spriteSrc && (
+          <img
+            src={`/${spriteSrc}`}
+            alt={value}
+            className="w-12 h-12 object-contain"
+          />
+        )}
         <span className="text-xs font-bold">{value}</span>
       </div>
     )
@@ -31,8 +35,8 @@ export default function PokemonSlot({ value, onChange, pokemonNames }: Props) {
         onChange={(e) => onChange(e.target.value)}
       >
         <option value="">---</option>
-        {pokemonNames.map((name) => (
-          <option key={name} value={name}>{name}</option>
+        {pokemonList.map((p) => (
+          <option key={p.name} value={p.name}>{p.name}</option>
         ))}
       </select>
     </div>
