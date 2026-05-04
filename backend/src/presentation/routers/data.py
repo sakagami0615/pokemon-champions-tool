@@ -140,6 +140,17 @@ def select_date(req: SelectDateRequest):
     return {"selected_date": _state.selected_date}
 
 
+@router.get("/pokemon-list")
+def get_pokemon_list():
+    pokemon_list = _pokemon_list_repo.get_pokemon_list()
+    if pokemon_list is None:
+        return {"pokemons": [], "mega_pokemons": []}
+    return {
+        "pokemons": [p.model_dump() for p in pokemon_list.pokemons],
+        "mega_pokemons": [p.model_dump() for p in pokemon_list.mega_pokemons],
+    }
+
+
 @router.get("/pokemon/names")
 def get_pokemon_names():
     if _state.selected_date:

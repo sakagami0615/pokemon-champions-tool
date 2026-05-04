@@ -266,3 +266,51 @@ async def test_data_status_dates_detail_structure():
     assert detail["date"] == "2026-04-29"
     assert detail["pokemon_count"] == 1
     assert detail["top_pokemon"] == [{"name": "ピカチュウ"}]
+
+
+@pytest.mark.asyncio
+async def test_get_pokemon_list_empty():
+    with patch("presentation.routers.data._pokemon_list_repo") as mock_repo:
+        mock_repo.get_pokemon_list.return_value = None
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get("/api/data/pokemon-list")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["pokemons"] == []
+    assert data["mega_pokemons"] == []
+
+
+@pytest.mark.asyncio
+async def test_get_pokemon_list_returns_data():
+    from domain.entities.pokemon import PokemonList, PokemonInfo, BaseStats as BS
+    mock_pokemon = PokemonInfo(
+        pokedex_id=6,
+        name="リザードン",
+        types=["ほのお", "ひこう"],
+        base_stats=BS(hp=78, attack=84, defense=78, sp_attack=109, sp_defense=85, speed=100),
+        height_m=1.7,
+        weight_kg=90.5,
+        low_kick_power=100,
+        abilities=["もうか"],
+        no_effect_types=["じめん"],
+        quarter_damage_types=[],
+        half_damage_types=[],
+        double_damage_types=["いわ"],
+        quad_damage_types=[],
+        sprite_path="sprites/006.png",
+    )
+    mock_list = PokemonList(
+        collected_at="2026-05-01T00:00:00",
+        pokemons=[mock_pokemon],
+        mega_pokemons=[],
+    )
+    with patch("presentation.routers.data._pokemon_list_repo") as mock_repo:
+        mock_repo.get_pokemon_list.return_value = mock_list
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get("/api/data/pokemon-list")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["pokemons"]) == 1
+    assert data["pokemons"][0]["name"] == "リザードン"
+    assert data["pokemons"][0]["base_stats"]["hp"] == 78
+    assert data["mega_pokemons"] == []

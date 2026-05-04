@@ -1,14 +1,15 @@
 import { useRef } from 'react'
 import PokemonSlot from './PokemonSlot'
+import type { PokemonListEntry } from '../../domain/entities/pokemon'
 
 interface Props {
   party: string[]
   onChange: (party: string[]) => void
-  pokemonNames: string[]
+  pokemonList: PokemonListEntry[]
   onImageUpload: (file: File) => Promise<string[]>
 }
 
-export default function PartyInput({ party, onChange, pokemonNames, onImageUpload }: Props) {
+export default function PartyInput({ party, onChange, pokemonList, onImageUpload }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const update = (index: number, name: string) => {
@@ -44,7 +45,7 @@ export default function PartyInput({ party, onChange, pokemonNames, onImageUploa
       </div>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {party.map((name, i) => (
-          <PokemonSlot key={i} value={name} onChange={v => update(i, v)} pokemonNames={pokemonNames} />
+          <PokemonSlot key={i} value={name} onChange={v => update(i, v)} pokemonList={pokemonList} />
         ))}
       </div>
     </div>
