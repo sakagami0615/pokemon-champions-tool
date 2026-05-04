@@ -204,9 +204,9 @@ async def test_predict_uses_selected_date(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_predict_uses_latest_when_no_date_selected():
+async def test_predict_uses_latest_when_no_date_selected(monkeypatch):
     import application.state.scraping_state as state
-    state.selected_date = None
+    monkeypatch.setattr(state, "selected_date", None)
 
     with patch("presentation.routers.prediction._usage_repo") as mock_repo:
         mock_repo.get_usage_data.return_value = MagicMock()
