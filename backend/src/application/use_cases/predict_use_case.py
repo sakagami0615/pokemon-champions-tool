@@ -1,7 +1,7 @@
 import re
-import anthropic
 from domain.entities.pokemon import UsageData
 from domain.entities.party import PredictionResult, PredictionPattern
+from domain.repositories.llm_client import ILLMClient
 
 SYSTEM_PROMPT = """あなたはポケモンチャンピオンズの対戦分析AIです。
 与えられた情報をもとに、相手プレイヤーが選出しそうなポケモン3体のパターンを3つ予想してください。
@@ -15,8 +15,8 @@ SYSTEM_PROMPT = """あなたはポケモンチャンピオンズの対戦分析A
 
 
 class PredictUseCase:
-    def __init__(self, api_key: str):
-        self.client = anthropic.Anthropic(api_key=api_key)
+    def __init__(self, llm_client: ILLMClient) -> None:
+        self._client = llm_client
 
     def predict(
         self,
@@ -25,13 +25,8 @@ class PredictUseCase:
         usage_data: UsageData,
     ) -> PredictionResult:
         prompt = self._build_prompt(opponent_party, my_party, usage_data)
-        response = self.client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=1024,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        return self._parse_response(response.content[0].text)
+        text = self._client.generate(SYSTEM_PROMPT, prompt)
+        return self._parse_response(text)
 
     def _build_prompt(
         self,
