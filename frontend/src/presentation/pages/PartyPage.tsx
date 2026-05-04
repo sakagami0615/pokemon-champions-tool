@@ -2,14 +2,18 @@ import { useState } from 'react'
 import PokemonSlot from '../components/PokemonSlot'
 import { useParty } from '../../application/hooks/useParty'
 import { usePokemonData } from '../../application/hooks/usePokemonData'
+import { useDataManagement } from '../../application/hooks/useDataManagement'
 import type { Party } from '../../domain/entities/party'
 
 export default function PartyPage() {
   const { parties, createNewParty, updateExistingParty, removeParty } = useParty()
   const { pokemonNames } = usePokemonData()
+  const { status } = useDataManagement()
   const [editing, setEditing] = useState<Party | null>(null)
   const [name, setName] = useState('')
   const [pokemon, setPokemon] = useState<string[]>(Array(6).fill(''))
+
+  const hasData = status !== null && status.available_dates.length > 0
 
   const startNew = () => {
     setEditing(null)
@@ -39,11 +43,17 @@ export default function PartyPage() {
     await removeParty(id)
   }
 
-  const isSaveable = name.trim().length > 0 && pokemon.filter(Boolean).length >= 3
+  const isSaveable = hasData && name.trim().length > 0 && pokemon.filter(Boolean).length >= 3
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <h1 className="font-bold text-xl">パーティ登録</h1>
+
+      {status !== null && !hasData && (
+        <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg px-4 py-3">
+          データが取得されていません。データ管理ページからデータを取得してください。
+        </p>
+      )}
 
       <div className="border rounded-xl p-4 space-y-4 dark:border-gray-700">
         <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">

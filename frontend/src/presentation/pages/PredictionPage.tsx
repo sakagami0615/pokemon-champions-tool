@@ -5,6 +5,7 @@ import { usePredict } from '../../application/hooks/usePredict'
 import { useParty } from '../../application/hooks/useParty'
 import { usePokemonData } from '../../application/hooks/usePokemonData'
 import { useRecognition } from '../../application/hooks/useRecognition'
+import { useDataManagement } from '../../application/hooks/useDataManagement'
 
 export default function PredictionPage() {
   const [opponentParty, setOpponentParty] = useState<string[]>(Array(6).fill(''))
@@ -12,13 +13,23 @@ export default function PredictionPage() {
   const { parties, selectedPartyId, myParty, selectParty } = useParty()
   const { pokemonNames, pokemonList } = usePokemonData()
   const { recognizeImage } = useRecognition()
+  const { status } = useDataManagement()
+
+  const hasData = status !== null && status.available_dates.length > 0
 
   const isReady =
+    hasData &&
     opponentParty.filter(Boolean).length >= 3 &&
     selectedPartyId !== null
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
+      {status !== null && !hasData && (
+        <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg px-4 py-3">
+          データが取得されていません。データ管理ページからデータを取得してください。
+        </p>
+      )}
+
       <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonNames={pokemonNames} onImageUpload={recognizeImage} />
 
       <div>
