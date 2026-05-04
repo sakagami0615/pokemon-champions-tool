@@ -10,7 +10,7 @@ export default function PredictionPage() {
   const [opponentParty, setOpponentParty] = useState<string[]>(Array(6).fill(''))
   const { result, loading, error, handlePredict } = usePredict()
   const { parties, selectedPartyId, myParty, selectParty } = useParty()
-  const { pokemonNames } = usePokemonData()
+  const { pokemonNames, pokemonList } = usePokemonData()
   const { recognizeImage } = useRecognition()
 
   const isReady =
@@ -62,7 +62,7 @@ export default function PredictionPage() {
         {loading ? '予想中...' : '選出予想する'}
       </button>
 
-      {result && <PredictionResultView result={result} />}
+      {result && <PredictionResultView result={result} pokemonList={pokemonList} />}
     </div>
   )
 }

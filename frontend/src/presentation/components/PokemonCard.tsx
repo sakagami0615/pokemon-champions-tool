@@ -1,14 +1,15 @@
-import type { UsageEntry } from '../../domain/entities/pokemon'
+import type { UsageEntry, PokemonListEntry } from '../../domain/entities/pokemon'
 
 interface Props {
   name: string
   usage: UsageEntry | null
+  pokemonList: PokemonListEntry[]
 }
 
 function labelColor(label: string) {
   const map: Record<string, string> = {
     'わざ': '#7c3aed', '持ち物': '#0369a1', '特性': '#065f46', '性格': '#92400e',
-    '個体値': '#be185d', '能力ポイント': '#b45309',
+    '種族値': '#be185d', '能力ポイント': '#b45309',
   }
   return map[label] ?? '#374151'
 }
@@ -29,10 +30,11 @@ function StatRow({ label, items }: { label: string; items: { name: string; rate:
   )
 }
 
-export default function PokemonCard({ name, usage }: Props) {
-  const ivText = usage?.ivs
-    ? Object.entries(usage.ivs).map(([k, v]) => `${k}${v}`).join(' ')
-    : 'H31 A31 B31 C31 D31 S31'
+export default function PokemonCard({ name, usage, pokemonList }: Props) {
+  const baseStats = pokemonList.find((p) => p.name === name)?.base_stats ?? null
+  const baseStatsText = baseStats
+    ? `H${baseStats.hp} A${baseStats.attack} B${baseStats.defense} C${baseStats.sp_attack} D${baseStats.sp_defense} S${baseStats.speed}`
+    : null
 
   return (
     <div className="flex-1 rounded-lg p-3 bg-gray-50 dark:bg-gray-800 min-w-0">
@@ -53,10 +55,12 @@ export default function PokemonCard({ name, usage }: Props) {
               <StatRow label="持ち物" items={usage.items.slice(0, 2)} />
               <StatRow label="特性" items={usage.abilities.slice(0, 2)} />
               <StatRow label="性格" items={usage.natures.slice(0, 2)} />
-              <div className="mb-1">
-                <span className="text-xs font-bold" style={{ color: '#be185d' }}>個体値</span>
-                <div className="text-xs font-mono bg-pink-50 dark:bg-pink-900/20 rounded px-1 py-0.5">{ivText}</div>
-              </div>
+              {baseStatsText && (
+                <div className="mb-1">
+                  <span className="text-xs font-bold" style={{ color: '#be185d' }}>種族値</span>
+                  <div className="text-xs font-mono bg-pink-50 dark:bg-pink-900/20 rounded px-1 py-0.5">{baseStatsText}</div>
+                </div>
+              )}
               <div className="mb-1">
                 <span className="text-xs font-bold" style={{ color: '#b45309' }}>能力ポイント</span>
                 {usage.evs.slice(0, 2).map((ev, i) => (
