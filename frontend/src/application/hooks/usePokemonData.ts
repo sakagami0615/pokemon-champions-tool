@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { getPokemonNames, getPokemonList } from '../../infrastructure/api/dataApi'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { getPokemonList } from '../../infrastructure/api/dataApi'
 import type { PokemonListEntry, BaseStats } from '../../domain/entities/pokemon'
 
 export interface UsePokemonDataReturn {
@@ -9,15 +9,15 @@ export interface UsePokemonDataReturn {
 }
 
 export function usePokemonData(): UsePokemonDataReturn {
-  const [pokemonNames, setPokemonNames] = useState<string[]>([])
   const [pokemonList, setPokemonList] = useState<PokemonListEntry[]>([])
 
   useEffect(() => {
-    getPokemonNames().then(setPokemonNames).catch(() => {})
     getPokemonList()
       .then((res) => setPokemonList([...res.pokemons, ...res.mega_pokemons]))
       .catch(() => {})
   }, [])
+
+  const pokemonNames = useMemo(() => pokemonList.map((p) => p.name), [pokemonList])
 
   const getBaseStats = useCallback(
     (name: string): BaseStats | null =>
