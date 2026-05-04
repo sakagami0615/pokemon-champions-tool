@@ -108,7 +108,7 @@ export default function PartyPage() {
                 </button>
               </div>
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 justify-items-center">
               {p.pokemons.map((pname, i) => {
                 const spriteSrc = pokemonList.find((e) => e.name === pname)?.sprite_path
                 return (
