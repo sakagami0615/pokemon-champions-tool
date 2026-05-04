@@ -1,11 +1,12 @@
 import { useDataManagement } from '../../application/hooks/useDataManagement'
 import DataCardList from '../components/DataCardList'
+import PokemonPanelGrid from '../components/PokemonPanelGrid'
 
 export default function DataPage() {
-  const { status, isFetching, fetchMessage, error, triggerFetch, handleSelectDate } = useDataManagement()
+  const { status, pokemonList, isFetching, fetchMessage, error, triggerFetch, handleSelectDate } = useDataManagement()
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       <h1 className="text-xl font-bold">データ管理</h1>
 
       <div className="space-y-2">
@@ -28,11 +29,18 @@ export default function DataPage() {
       {status === null ? (
         <p className="text-sm text-gray-500">読み込み中...</p>
       ) : (
-        <DataCardList
-          details={status.dates_detail}
-          selectedDate={status.selected_date}
-          onSelect={handleSelectDate}
-        />
+        <div className="flex gap-4 items-start">
+          <div className="w-64 shrink-0">
+            <DataCardList
+              details={status.dates_detail}
+              selectedDate={status.selected_date}
+              onSelect={handleSelectDate}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <PokemonPanelGrid pokemonList={pokemonList} />
+          </div>
+        </div>
       )}
     </div>
   )
