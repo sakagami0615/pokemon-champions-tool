@@ -28,5 +28,7 @@ class LiteLLMClient(ILLMClient):
         }
         if provider == "ollama" and settings.base_url:
             kwargs["api_base"] = settings.base_url
+        if settings.api_key:
+            kwargs["api_key"] = settings.api_key
         response = litellm.completion(**kwargs)
         return response.choices[0].message.content

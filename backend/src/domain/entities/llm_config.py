@@ -5,6 +5,7 @@ from dataclasses import dataclass
 class ProviderSettings:
     model: str | None
     base_url: str | None
+    api_key: str | None = None
 
 
 @dataclass(frozen=True)

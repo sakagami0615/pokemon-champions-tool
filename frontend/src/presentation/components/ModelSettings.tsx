@@ -11,6 +11,7 @@ interface Props {
   isSelectedModelValid: boolean
   onSelectProvider: (p: Provider) => void
   onSelectModel: (p: Provider, model: string) => void
+  onUpdateApiKey: (p: Provider, key: string) => void
   onUpdateOllamaBaseUrl: (url: string) => void
   onFetchOllamaModels: () => void
   onSave: () => void
@@ -26,6 +27,7 @@ export default function ModelSettings({
   isSelectedModelValid,
   onSelectProvider,
   onSelectModel,
+  onUpdateApiKey,
   onUpdateOllamaBaseUrl,
   onFetchOllamaModels,
   onSave,
@@ -105,21 +107,35 @@ export default function ModelSettings({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 ml-6">
-                  <label className="text-sm text-gray-600 dark:text-gray-400 w-28">
-                    モデル
-                  </label>
-                  <select
-                    value={settings.model ?? ''}
-                    onChange={(e) => onSelectModel(provider, e.target.value)}
-                    className="flex-1 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600"
-                  >
-                    {models.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
-                      </option>
-                    ))}
-                  </select>
+                <div className="space-y-2 ml-6">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm text-gray-600 dark:text-gray-400 w-28">
+                      モデル
+                    </label>
+                    <select
+                      value={settings.model ?? ''}
+                      onChange={(e) => onSelectModel(provider, e.target.value)}
+                      className="flex-1 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600"
+                    >
+                      {models.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm text-gray-600 dark:text-gray-400 w-28">
+                      APIキー
+                    </label>
+                    <input
+                      type="password"
+                      value={settings.api_key ?? ''}
+                      onChange={(e) => onUpdateApiKey(provider, e.target.value)}
+                      placeholder="環境変数から自動読み込み"
+                      className="flex-1 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600"
+                    />
+                  </div>
                 </div>
               )}
             </div>

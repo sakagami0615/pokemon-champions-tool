@@ -8,10 +8,13 @@ from infrastructure.persistence.json_llm_config_repository import JsonLLMConfigR
 router = APIRouter(prefix="/api", tags=["llm_config"])
 _llm_config_repo = JsonLLMConfigRepository()
 
+_MASKED = "***"
+
 
 class ProviderSettingsRequest(BaseModel):
     model: str | None
     base_url: str | None
+    api_key: str | None = None
 
 
 class LLMConfigRequest(BaseModel):
@@ -19,21 +22,34 @@ class LLMConfigRequest(BaseModel):
     providers: dict[str, ProviderSettingsRequest]
 
 
+def _mask_config(config: LLMConfig) -> dict:
+    d = dataclasses.asdict(config)
+    for provider_data in d["providers"].values():
+        if provider_data.get("api_key") is not None:
+            provider_data["api_key"] = _MASKED
+    return d
+
+
 @router.get("/llm-config")
 def get_llm_config():
     config = _llm_config_repo.get_config()
-    return dataclasses.asdict(config)
+    return _mask_config(config)
 
 
 @router.put("/llm-config")
 def put_llm_config(req: LLMConfigRequest):
-    providers = {
-        k: ProviderSettings(model=v.model, base_url=v.base_url)
-        for k, v in req.providers.items()
-    }
+    existing = _llm_config_repo.get_config()
+    providers = {}
+    for k, v in req.providers.items():
+        if v.api_key == _MASKED:
+            existing_settings = existing.providers.get(k)
+            api_key = existing_settings.api_key if existing_settings else None
+        else:
+            api_key = v.api_key
+        providers[k] = ProviderSettings(model=v.model, base_url=v.base_url, api_key=api_key)
     config = LLMConfig(selected_provider=req.selected_provider, providers=providers)
     _llm_config_repo.save_config(config)
-    return dataclasses.asdict(config)
+    return _mask_config(config)
 
 
 @router.get("/ollama-models")

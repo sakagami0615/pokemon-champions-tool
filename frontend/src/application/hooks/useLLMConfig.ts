@@ -38,6 +38,20 @@ export function useLLMConfig() {
     [config]
   )
 
+  const updateApiKey = useCallback(
+    (provider: Provider, key: string) => {
+      if (!config) return
+      setConfig({
+        ...config,
+        providers: {
+          ...config.providers,
+          [provider]: { ...config.providers[provider], api_key: key || null },
+        },
+      })
+    },
+    [config]
+  )
+
   const updateOllamaBaseUrl = useCallback(
     (url: string) => {
       if (!config) return
@@ -95,6 +109,7 @@ export function useLLMConfig() {
     isSelectedModelValid,
     updateProvider,
     updateModel,
+    updateApiKey,
     updateOllamaBaseUrl,
     fetchOllamaModels,
     save,

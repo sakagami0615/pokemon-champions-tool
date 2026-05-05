@@ -28,6 +28,7 @@ export default function SettingsPage() {
     isSelectedModelValid,
     updateProvider,
     updateModel,
+    updateApiKey,
     updateOllamaBaseUrl,
     fetchOllamaModels,
     save,
@@ -128,6 +129,7 @@ export default function SettingsPage() {
             isSelectedModelValid={isSelectedModelValid}
             onSelectProvider={updateProvider}
             onSelectModel={updateModel}
+            onUpdateApiKey={updateApiKey}
             onUpdateOllamaBaseUrl={updateOllamaBaseUrl}
             onFetchOllamaModels={fetchOllamaModels}
             onSave={save}

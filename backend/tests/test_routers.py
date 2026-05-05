@@ -349,10 +349,10 @@ async def test_get_llm_config_returns_default():
     default_config = LLMConfig(
         selected_provider="anthropic",
         providers={
-            "anthropic": ProviderSettings(model="claude-sonnet-4-6", base_url=None),
-            "openai": ProviderSettings(model="gpt-4o", base_url=None),
-            "google": ProviderSettings(model="gemini-2.0-flash", base_url=None),
-            "ollama": ProviderSettings(model=None, base_url="http://host.docker.internal:11434"),
+            "anthropic": ProviderSettings(model="claude-sonnet-4-6", base_url=None, api_key=None),
+            "openai": ProviderSettings(model="gpt-4o", base_url=None, api_key=None),
+            "google": ProviderSettings(model="gemini-2.0-flash", base_url=None, api_key=None),
+            "ollama": ProviderSettings(model=None, base_url="http://host.docker.internal:11434", api_key=None),
         },
     )
     with patch("presentation.routers.llm_config._llm_config_repo") as mock_repo:
@@ -370,14 +370,66 @@ async def test_get_llm_config_returns_default():
 
 
 @pytest.mark.asyncio
+async def test_get_llm_config_masks_api_key():
+    from domain.entities.llm_config import LLMConfig, ProviderSettings
+    config_with_key = LLMConfig(
+        selected_provider="anthropic",
+        providers={
+            "anthropic": ProviderSettings(model="claude-sonnet-4-6", base_url=None, api_key="sk-real-key"),
+            "openai": ProviderSettings(model="gpt-4o", base_url=None, api_key=None),
+            "google": ProviderSettings(model="gemini-2.0-flash", base_url=None, api_key=None),
+            "ollama": ProviderSettings(model=None, base_url="http://host.docker.internal:11434", api_key=None),
+        },
+    )
+    with patch("presentation.routers.llm_config._llm_config_repo") as mock_repo:
+        mock_repo.get_config.return_value = config_with_key
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get("/api/llm-config")
+    assert resp.status_code == 200
+    assert resp.json()["providers"]["anthropic"]["api_key"] == "***"
+    assert resp.json()["providers"]["openai"]["api_key"] is None
+
+
+@pytest.mark.asyncio
+async def test_put_llm_config_preserves_masked_key():
+    from domain.entities.llm_config import LLMConfig, ProviderSettings
+    existing_config = LLMConfig(
+        selected_provider="anthropic",
+        providers={
+            "anthropic": ProviderSettings(model="claude-sonnet-4-6", base_url=None, api_key="sk-existing"),
+            "openai": ProviderSettings(model="gpt-4o", base_url=None, api_key=None),
+            "google": ProviderSettings(model="gemini-2.0-flash", base_url=None, api_key=None),
+            "ollama": ProviderSettings(model=None, base_url="http://host.docker.internal:11434", api_key=None),
+        },
+    )
+    payload = {
+        "selected_provider": "anthropic",
+        "providers": {
+            "anthropic": {"model": "claude-sonnet-4-6", "base_url": None, "api_key": "***"},
+            "openai": {"model": "gpt-4o", "base_url": None, "api_key": None},
+            "google": {"model": "gemini-2.0-flash", "base_url": None, "api_key": None},
+            "ollama": {"model": None, "base_url": "http://host.docker.internal:11434", "api_key": None},
+        },
+    }
+    with patch("presentation.routers.llm_config._llm_config_repo") as mock_repo:
+        mock_repo.get_config.return_value = existing_config
+        mock_repo.save_config = MagicMock()
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.put("/api/llm-config", json=payload)
+    assert resp.status_code == 200
+    saved = mock_repo.save_config.call_args[0][0]
+    assert saved.providers["anthropic"].api_key == "sk-existing"
+
+
+@pytest.mark.asyncio
 async def test_put_llm_config_saves_and_returns():
     payload = {
         "selected_provider": "openai",
         "providers": {
-            "anthropic": {"model": "claude-sonnet-4-6", "base_url": None},
-            "openai": {"model": "gpt-4o", "base_url": None},
-            "google": {"model": "gemini-2.0-flash", "base_url": None},
-            "ollama": {"model": None, "base_url": "http://host.docker.internal:11434"},
+            "anthropic": {"model": "claude-sonnet-4-6", "base_url": None, "api_key": None},
+            "openai": {"model": "gpt-4o", "base_url": None, "api_key": None},
+            "google": {"model": "gemini-2.0-flash", "base_url": None, "api_key": None},
+            "ollama": {"model": None, "base_url": "http://host.docker.internal:11434", "api_key": None},
         },
     }
     with patch("presentation.routers.llm_config._llm_config_repo") as mock_repo:

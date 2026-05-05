@@ -3,6 +3,7 @@ export type Provider = 'anthropic' | 'openai' | 'google' | 'ollama'
 export interface ProviderSettings {
   model: string | null
   base_url: string | null
+  api_key: string | null
 }
 
 export interface LLMConfig {
