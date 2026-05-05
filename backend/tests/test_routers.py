@@ -369,7 +369,7 @@ async def test_get_pokemon_list_returns_data():
 async def test_get_llm_config_returns_default():
     from domain.entities.llm_config import LLMConfig, ProviderSettings
     default_config = LLMConfig(
-        selected_provider="anthropic",
+        selected_provider="openai",
         providers={
             "anthropic": ProviderSettings(model="claude-sonnet-4-6", base_url=None, api_key=None),
             "openai": ProviderSettings(model="gpt-4o", base_url=None, api_key=None),
@@ -383,7 +383,7 @@ async def test_get_llm_config_returns_default():
             resp = await client.get("/api/llm-config")
     assert resp.status_code == 200
     data = resp.json()
-    assert data["selected_provider"] == "anthropic"
+    assert data["selected_provider"] == "openai"
     assert "providers" in data
     assert "anthropic" in data["providers"]
     assert "openai" in data["providers"]

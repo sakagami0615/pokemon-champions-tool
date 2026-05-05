@@ -5,7 +5,7 @@ from domain.entities.llm_config import LLMConfig, ProviderSettings
 from domain.repositories.llm_config_repository import ILLMConfigRepository
 
 _DEFAULT_CONFIG: dict = {
-    "selected_provider": "anthropic",
+    "selected_provider": "openai",
     "providers": {
         "anthropic": {"model": "claude-sonnet-4-6", "base_url": None, "api_key": None},
         "openai": {"model": "gpt-4o", "base_url": None, "api_key": None},

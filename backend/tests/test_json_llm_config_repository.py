@@ -6,7 +6,7 @@ from domain.entities.llm_config import LLMConfig, ProviderSettings
 def test_get_config_returns_default_when_no_file(tmp_path):
     repo = JsonLLMConfigRepository(data_dir=tmp_path)
     config = repo.get_config()
-    assert config.selected_provider == "anthropic"
+    assert config.selected_provider == "openai"
     assert config.providers["anthropic"].model == "claude-sonnet-4-6"
     assert config.providers["openai"].model == "gpt-4o"
     assert config.providers["google"].model == "gemini-2.0-flash"
@@ -46,4 +46,4 @@ def test_get_config_creates_data_dir_if_missing(tmp_path):
     nested = tmp_path / "nested" / "dir"
     repo = JsonLLMConfigRepository(data_dir=nested)
     config = repo.get_config()
-    assert config.selected_provider == "anthropic"
+    assert config.selected_provider == "openai"
