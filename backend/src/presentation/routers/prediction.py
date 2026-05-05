@@ -30,11 +30,17 @@ def predict(req: PredictRequest):
         )
 
     config = _llm_config_repo.get_config()
-    provider_settings = config.providers.get(config.selected_provider)
+    provider = config.selected_provider
+    provider_settings = config.providers.get(provider)
     if provider_settings is None or provider_settings.model is None:
         raise HTTPException(
             status_code=400,
             detail="LLMのモデルが設定されていません。設定ページでモデルを選択してください。",
+        )
+    if provider != "ollama" and provider_settings.api_key is None:
+        raise HTTPException(
+            status_code=400,
+            detail="APIキーが設定されていません。設定ページでAPIキーを入力してください。",
         )
 
     llm_client = LiteLLMClient(config)

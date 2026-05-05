@@ -251,6 +251,28 @@ async def test_predict_returns_400_when_model_not_set():
 
 
 @pytest.mark.asyncio
+async def test_predict_returns_400_when_api_key_not_set(monkeypatch):
+    import application.state.scraping_state as state
+    monkeypatch.setattr(state, "selected_date", None)
+
+    with patch("presentation.routers.prediction._usage_repo") as mock_repo:
+        mock_repo.get_usage_data.return_value = MagicMock()
+        with patch("presentation.routers.prediction._llm_config_repo") as mock_cfg:
+            mock_cfg.get_config.return_value = MagicMock(
+                selected_provider="anthropic",
+                providers={"anthropic": MagicMock(model="claude-sonnet-4-6", api_key=None)},
+            )
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                resp = await client.post("/api/predict", json={
+                    "opponent_party": ["リザードン"] * 6,
+                    "my_party": ["カメックス"] * 6,
+                })
+
+    assert resp.status_code == 400
+    assert "APIキーが設定されていません" in resp.json()["detail"]
+
+
+@pytest.mark.asyncio
 async def test_data_status_dates_detail_structure():
     from domain.entities.pokemon import UsageData, UsageEntry, PokemonList, PokemonInfo, BaseStats
     import presentation.routers.data as rd
