@@ -3,8 +3,8 @@ import DarkModeToggle from './DarkModeToggle'
 interface Props {
   dark: boolean
   onToggleDark: () => void
-  page: 'prediction' | 'party' | 'data'
-  onChangePage: (p: 'prediction' | 'party' | 'data') => void
+  page: 'prediction' | 'party' | 'settings'
+  onChangePage: (p: 'prediction' | 'party' | 'settings') => void
 }
 
 export default function Header({ dark, onToggleDark, page, onChangePage }: Props) {
@@ -26,10 +26,10 @@ export default function Header({ dark, onToggleDark, page, onChangePage }: Props
             パーティ登録
           </button>
           <button
-            onClick={() => onChangePage('data')}
-            className={`px-3 py-1 rounded text-sm ${page === 'data' ? 'bg-indigo-600 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            onClick={() => onChangePage('settings')}
+            className={`px-3 py-1 rounded text-sm ${page === 'settings' ? 'bg-indigo-600 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
-            データ管理
+            設定
           </button>
         </nav>
       </div>
