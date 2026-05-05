@@ -10,7 +10,7 @@ _DEFAULT_CONFIG: dict = {
         "anthropic": {"model": "claude-sonnet-4-6", "base_url": None, "api_key": None},
         "openai": {"model": "gpt-4o", "base_url": None, "api_key": None},
         "google": {"model": "gemini-2.0-flash", "base_url": None, "api_key": None},
-        "ollama": {"model": None, "base_url": None, "api_key": None},
+        "ollama": {"model": None, "base_url": "http://host.docker.internal:11434", "api_key": None},
     },
 }
 
