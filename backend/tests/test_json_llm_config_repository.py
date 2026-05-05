@@ -11,7 +11,7 @@ def test_get_config_returns_default_when_no_file(tmp_path):
     assert config.providers["openai"].model == "gpt-4o"
     assert config.providers["google"].model == "gemini-2.0-flash"
     assert config.providers["ollama"].model is None
-    assert config.providers["ollama"].base_url == "http://host.docker.internal:11434"
+    assert config.providers["ollama"].base_url is None
 
 
 def test_save_and_get_config_roundtrip(tmp_path):

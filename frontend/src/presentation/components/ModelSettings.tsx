@@ -74,6 +74,7 @@ export default function ModelSettings({
                       type="text"
                       value={settings.base_url ?? ''}
                       onChange={(e) => onUpdateOllamaBaseUrl(e.target.value)}
+                      placeholder="http://{IP address}:11434"
                       className="flex-1 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600"
                     />
                   </div>
@@ -132,7 +133,7 @@ export default function ModelSettings({
                       type="password"
                       value={settings.api_key ?? ''}
                       onChange={(e) => onUpdateApiKey(provider, e.target.value)}
-                      placeholder="未設定"
+                      placeholder="API Key here"
                       className="flex-1 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600"
                     />
                   </div>
