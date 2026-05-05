@@ -132,7 +132,7 @@ export default function ModelSettings({
                       type="password"
                       value={settings.api_key ?? ''}
                       onChange={(e) => onUpdateApiKey(provider, e.target.value)}
-                      placeholder="環境変数から自動読み込み"
+                      placeholder="未設定"
                       className="flex-1 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600"
                     />
                   </div>

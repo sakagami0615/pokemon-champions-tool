@@ -43,6 +43,30 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
+      <section>
+        {config === null ? (
+          <p className="text-sm text-gray-500">読み込み中...</p>
+        ) : (
+          <ModelSettings
+            config={config}
+            ollamaModels={ollamaModels}
+            isSaving={isSaving}
+            isFetchingModels={isFetchingModels}
+            error={llmError}
+            saveMessage={saveMessage}
+            isSelectedModelValid={isSelectedModelValid}
+            onSelectProvider={updateProvider}
+            onSelectModel={updateModel}
+            onUpdateApiKey={updateApiKey}
+            onUpdateOllamaBaseUrl={updateOllamaBaseUrl}
+            onFetchOllamaModels={fetchOllamaModels}
+            onSave={save}
+          />
+        )}
+      </section>
+
+      <hr className="border-gray-200 dark:border-gray-700" />
+
       <section className="space-y-4">
         <h1 className="text-xl font-bold">データ管理</h1>
 
@@ -110,30 +134,6 @@ export default function SettingsPage() {
               </div>
             </div>
           </>
-        )}
-      </section>
-
-      <hr className="border-gray-200 dark:border-gray-700" />
-
-      <section>
-        {config === null ? (
-          <p className="text-sm text-gray-500">読み込み中...</p>
-        ) : (
-          <ModelSettings
-            config={config}
-            ollamaModels={ollamaModels}
-            isSaving={isSaving}
-            isFetchingModels={isFetchingModels}
-            error={llmError}
-            saveMessage={saveMessage}
-            isSelectedModelValid={isSelectedModelValid}
-            onSelectProvider={updateProvider}
-            onSelectModel={updateModel}
-            onUpdateApiKey={updateApiKey}
-            onUpdateOllamaBaseUrl={updateOllamaBaseUrl}
-            onFetchOllamaModels={fetchOllamaModels}
-            onSave={save}
-          />
         )}
       </section>
     </div>

@@ -25,4 +25,4 @@ export const PROVIDER_MODELS: Record<Provider, string[]> = {
   ollama: [],
 }
 
-export const PROVIDERS: Provider[] = ['anthropic', 'openai', 'google', 'ollama']
+export const PROVIDERS: Provider[] = ['openai', 'anthropic', 'google', 'ollama']
