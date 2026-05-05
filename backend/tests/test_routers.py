@@ -341,3 +341,75 @@ async def test_get_pokemon_list_returns_data():
     assert data["pokemons"][0]["name"] == "リザードン"
     assert data["pokemons"][0]["base_stats"]["hp"] == 78
     assert data["mega_pokemons"] == []
+
+
+@pytest.mark.asyncio
+async def test_get_llm_config_returns_default():
+    from domain.entities.llm_config import LLMConfig, ProviderSettings
+    default_config = LLMConfig(
+        selected_provider="anthropic",
+        providers={
+            "anthropic": ProviderSettings(model="claude-sonnet-4-6", base_url=None),
+            "openai": ProviderSettings(model="gpt-4o", base_url=None),
+            "google": ProviderSettings(model="gemini-2.0-flash", base_url=None),
+            "ollama": ProviderSettings(model=None, base_url="http://host.docker.internal:11434"),
+        },
+    )
+    with patch("presentation.routers.llm_config._llm_config_repo") as mock_repo:
+        mock_repo.get_config.return_value = default_config
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get("/api/llm-config")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["selected_provider"] == "anthropic"
+    assert "providers" in data
+    assert "anthropic" in data["providers"]
+    assert "openai" in data["providers"]
+    assert "google" in data["providers"]
+    assert "ollama" in data["providers"]
+
+
+@pytest.mark.asyncio
+async def test_put_llm_config_saves_and_returns():
+    payload = {
+        "selected_provider": "openai",
+        "providers": {
+            "anthropic": {"model": "claude-sonnet-4-6", "base_url": None},
+            "openai": {"model": "gpt-4o", "base_url": None},
+            "google": {"model": "gemini-2.0-flash", "base_url": None},
+            "ollama": {"model": None, "base_url": "http://host.docker.internal:11434"},
+        },
+    }
+    with patch("presentation.routers.llm_config._llm_config_repo") as mock_repo:
+        mock_repo.save_config = MagicMock()
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.put("/api/llm-config", json=payload)
+    assert resp.status_code == 200
+    assert resp.json()["selected_provider"] == "openai"
+    mock_repo.save_config.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_get_ollama_models_returns_model_names():
+    with patch("presentation.routers.llm_config.requests.get") as mock_get:
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {
+            "models": [{"name": "llama3.2"}, {"name": "mistral"}]
+        }
+        mock_resp.raise_for_status = MagicMock()
+        mock_get.return_value = mock_resp
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get("/api/ollama-models?base_url=http://localhost:11434")
+    assert resp.status_code == 200
+    assert resp.json()["models"] == ["llama3.2", "mistral"]
+
+
+@pytest.mark.asyncio
+async def test_get_ollama_models_returns_503_on_connection_error():
+    with patch(
+        "presentation.routers.llm_config.requests.get",
+        side_effect=Exception("connection refused"),
+    ):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get("/api/ollama-models?base_url=http://localhost:11434")
+    assert resp.status_code == 503
