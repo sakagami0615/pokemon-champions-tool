@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
-from presentation.routers import data, recognition, prediction, party
+from presentation.routers import data, recognition, prediction, party, llm_config
 
 app = FastAPI(title="Pokemon Champions Tool")
 
@@ -17,6 +17,7 @@ app.include_router(data.router)
 app.include_router(recognition.router)
 app.include_router(prediction.router)
 app.include_router(party.router)
+app.include_router(llm_config.router)
 
 sprites_dir = Path(__file__).parent.parent / "data" / "sprites"
 sprites_dir.mkdir(parents=True, exist_ok=True)

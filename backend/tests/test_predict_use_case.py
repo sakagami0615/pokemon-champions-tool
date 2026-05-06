@@ -1,17 +1,18 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from application.use_cases.predict_use_case import PredictUseCase
 from domain.entities.pokemon import UsageData, UsageEntry, RatedItem, EvSpread
 from domain.entities.party import PredictionResult
+from domain.repositories.llm_client import ILLMClient
 
 
-MOCK_CLAUDE_RESPONSE = """
+MOCK_LLM_RESPONSE = """
 パターン1: リザードン, カメックス, フシギバナ
 パターン2: ピカチュウ, リザードン, イワーク
 パターン3: フシギバナ, カメックス, ゲンガー
 """
 
 
-def _make_usage_data():
+def _make_usage_data() -> UsageData:
     entry = UsageEntry(
         name="リザードン",
         moves=[RatedItem(name="かえんほうしゃ", rate=78)],
@@ -30,43 +31,34 @@ def _make_usage_data():
     )
 
 
-@patch("application.use_cases.predict_use_case.anthropic.Anthropic")
-def test_predict_returns_three_patterns(mock_anthropic_cls):
-    mock_client = MagicMock()
-    mock_anthropic_cls.return_value = mock_client
-    mock_client.messages.create.return_value = MagicMock(
-        content=[MagicMock(text=MOCK_CLAUDE_RESPONSE)]
-    )
+def _make_mock_client(response: str = MOCK_LLM_RESPONSE) -> ILLMClient:
+    mock = MagicMock(spec=ILLMClient)
+    mock.generate.return_value = response
+    return mock
 
-    use_case = PredictUseCase(api_key="test-key")
+
+def test_predict_returns_three_patterns():
+    use_case = PredictUseCase(llm_client=_make_mock_client())
     result = use_case.predict(
         opponent_party=["リザードン", "カメックス", "フシギバナ", "ピカチュウ", "イワーク", "ゲンガー"],
         my_party=["カビゴン", "ラプラス", "サンダー", "ゲンガー", "フシギバナ", "ストライク"],
         usage_data=_make_usage_data(),
     )
-
     assert isinstance(result, PredictionResult)
     assert len(result.patterns) == 3
     assert len(result.patterns[0].pokemons) == 3
     assert result.patterns[0].pokemons[0] == "リザードン"
 
 
-@patch("application.use_cases.predict_use_case.anthropic.Anthropic")
-def test_predict_calls_api_with_both_parties(mock_anthropic_cls):
-    mock_client = MagicMock()
-    mock_anthropic_cls.return_value = mock_client
-    mock_client.messages.create.return_value = MagicMock(
-        content=[MagicMock(text=MOCK_CLAUDE_RESPONSE)]
-    )
-
-    use_case = PredictUseCase(api_key="test-key")
+def test_predict_calls_generate_with_both_parties():
+    mock_client = _make_mock_client()
+    use_case = PredictUseCase(llm_client=mock_client)
     use_case.predict(
         opponent_party=["リザードン", "カメックス", "フシギバナ", "ピカチュウ", "イワーク", "ゲンガー"],
         my_party=["カビゴン", "ラプラス", "サンダー", "ゲンガー", "フシギバナ", "ストライク"],
         usage_data=_make_usage_data(),
     )
-
-    call_kwargs = mock_client.messages.create.call_args
-    prompt_text = str(call_kwargs)
-    assert "リザードン" in prompt_text
-    assert "カビゴン" in prompt_text
+    mock_client.generate.assert_called_once()
+    _system, user = mock_client.generate.call_args[0]
+    assert "リザードン" in user
+    assert "カビゴン" in user
