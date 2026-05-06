@@ -76,6 +76,27 @@
 
 通常ポケモンは `pokemons`、メガシンカポケモンは `mega_pokemons` に格納する。タイプ相性は5区分に分類する（`no_effect_types`: x0無効、`quarter_damage_types`: x0.25、`half_damage_types`: x0.5、`double_damage_types`: x2弱点、`quad_damage_types`: x4弱点）。
 
+## LLM設定（llm_config.json）
+
+```json
+{
+  "selected_provider": "anthropic",
+  "providers": {
+    "anthropic": { "model": "claude-sonnet-4-6", "api_key": null, "base_url": null },
+    "openai":    { "model": "gpt-4o",            "api_key": null, "base_url": null },
+    "google":    { "model": "gemini-2.0-flash",  "api_key": null, "base_url": null },
+    "ollama":    { "model": null,                 "api_key": null, "base_url": "http://host.docker.internal:11434" }
+  }
+}
+```
+
+- `selected_provider`: 現在使用中のプロバイダー名
+- `model`: 使用するモデル名（`null` の場合は未設定）
+- `api_key`: APIキー（Ollamaは不要）
+- `base_url`: Ollamaのみ使用。他プロバイダーは `null`
+
+ファイルが存在しない場合はデフォルト設定（`selected_provider: "anthropic"`）が使用される。
+
 ## パーティデータ（parties.json）
 
 ```json
