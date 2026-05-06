@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { LLMConfig, Provider } from '../../domain/entities/llm_config'
 import { PROVIDER_LABELS, PROVIDER_MODELS, PROVIDERS } from '../../domain/entities/llm_config'
 
@@ -32,6 +33,8 @@ export default function ModelSettings({
   onFetchOllamaModels,
   onSave,
 }: Props) {
+  const [focusedApiKeyProvider, setFocusedApiKeyProvider] = useState<Provider | null>(null)
+
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-semibold">モデル設定</h2>
@@ -134,8 +137,14 @@ export default function ModelSettings({
                       APIキー
                     </label>
                     <input
-                      type="password"
-                      value={settings.api_key ?? ''}
+                      type={focusedApiKeyProvider === provider ? 'text' : 'password'}
+                      value={
+                        focusedApiKeyProvider === provider
+                          ? (settings.api_key ?? '')
+                          : (settings.api_key ? '*'.repeat(10) : '')
+                      }
+                      onFocus={() => setFocusedApiKeyProvider(provider)}
+                      onBlur={() => setFocusedApiKeyProvider(null)}
                       onChange={(e) => onUpdateApiKey(provider, e.target.value)}
                       placeholder="API Key here"
                       className="flex-1 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600"
