@@ -10,10 +10,13 @@ backend/
 │   ├── main.py                        # FastAPI エントリーポイント
 │   ├── domain/
 │   │   ├── entities/
+│   │   │   ├── llm_config.py          # LLM設定エンティティ（LLMConfig / ProviderSettings）
 │   │   │   ├── party.py               # パーティエンティティ
 │   │   │   └── pokemon.py             # ポケモンエンティティ
 │   │   └── repositories/
 │   │       ├── image_recognizer.py        # 画像認識リポジトリインターフェース
+│   │       ├── llm_client.py              # ILLMClient 抽象インターフェース
+│   │       ├── llm_config_repository.py   # ILLMConfigRepository 抽象インターフェース
 │   │       ├── party_repository.py        # パーティリポジトリインターフェース
 │   │       ├── pokemon_list_repository.py # 内定ポケモン一覧リポジトリインターフェース
 │   │       └── usage_repository.py        # 使用率データリポジトリインターフェース
@@ -26,19 +29,21 @@ backend/
 │   │       └── scrape_pokemon_list_use_case.py # 内定ポケモン一覧スクレイピングユースケース
 │   ├── infrastructure/
 │   │   ├── external/
-│   │   │   ├── ai_predictor.py        # Claude API 呼び出し集約（LLM切り替え口）
 │   │   │   ├── base_scraper.py        # スクレイパー基底クラス
 │   │   │   ├── constants.py           # スクレイピング定数
 │   │   │   ├── image_recognition.py   # OpenCV テンプレートマッチング実装
+│   │   │   ├── litellm_client.py      # ILLMClient の LiteLLM 実装（マルチプロバイダー対応）
 │   │   │   ├── pokemon_list_scraper.py # 内定ポケモン一覧スクレイパー実装
 │   │   │   └── scraper.py             # GameWith 使用率スクレイパー実装
 │   │   └── persistence/
+│   │       ├── json_llm_config_repository.py     # LLM設定 JSON 永続化実装
 │   │       ├── json_party_repository.py          # パーティ JSON 永続化実装
 │   │       ├── json_pokemon_list_repository.py   # 内定ポケモン一覧 JSON 永続化実装
 │   │       └── json_usage_repository.py          # 使用率データ JSON 永続化実装
 │   └── presentation/
 │       └── routers/
 │           ├── data.py                # データ取得・ステータス・日付選択エンドポイント
+│           ├── llm_config.py          # LLM設定取得・保存・Ollamaモデル一覧エンドポイント
 │           ├── party.py               # 自分パーティ CRUD
 │           ├── prediction.py          # 選出予想エンドポイント
 │           └── recognition.py         # 画像認識エンドポイント
@@ -46,9 +51,11 @@ backend/
 │   ├── conftest.py
 │   ├── test_base_scraper.py
 │   ├── test_image_recognition.py
+│   ├── test_json_llm_config_repository.py
 │   ├── test_json_party_repository.py
 │   ├── test_json_pokemon_list_repository.py
 │   ├── test_json_usage_repository.py
+│   ├── test_litellm_client.py
 │   ├── test_models.py
 │   ├── test_pokemon_list_scraper.py
 │   ├── test_predict_use_case.py
@@ -57,6 +64,7 @@ backend/
 │   └── test_scraper.py
 ├── data/                    # 永続化データ（バージョン管理外）
 │   ├── sprites/             # ポケモンスプライト画像
+│   ├── llm_config.json      # LLM設定（プロバイダー・モデル・APIキー）
 │   ├── pokemon_list.json    # 内定ポケモン一覧
 │   ├── usage_rates/         # 使用率データ（日付ごと）
 │   │   └── YYYY-MM-DD.json
@@ -93,17 +101,18 @@ frontend/src/
 │       └── useRecognition.ts    # 画像認識実行
 ├── presentation/
 │   ├── components/
-│   │   ├── DataCard.tsx         # データ管理：日付カード（1件分）
-│   │   ├── DataCardList.tsx     # データ管理：日付カード一覧（スクロール可）
+│   │   ├── DataCard.tsx         # 設定：日付カード（1件分）
+│   │   ├── DataCardList.tsx     # 設定：日付カード一覧（スクロール可）
 │   │   ├── DarkModeToggle.tsx   # ダークモード切り替えボタン
 │   │   ├── Header.tsx           # ヘッダー（ナビゲーション込み）
 │   │   ├── PartyInput.tsx       # 相手パーティ入力（6枠）
 │   │   ├── PatternCard.tsx      # 選出パターン1枚分のカード
 │   │   ├── PokemonCard.tsx      # ポケモン1体の型情報カード
+│   │   ├── PokemonPanelGrid.tsx # 設定：内定ポケモン一覧パネル
 │   │   ├── PokemonSlot.tsx      # 1枠：スプライト＋名前選択
 │   │   └── PredictionResult.tsx # 選出予想パターン一覧表示
 │   ├── pages/
-│   │   ├── DataPage.tsx         # データ管理画面
+│   │   ├── DataPage.tsx         # 設定画面（データ管理 + モデル設定）
 │   │   ├── PartyPage.tsx        # 自分パーティ登録画面
 │   │   └── PredictionPage.tsx   # 選出予想メイン画面
 │   └── hooks/

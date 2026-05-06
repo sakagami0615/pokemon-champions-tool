@@ -21,7 +21,7 @@
 | パッケージ管理 | UV |
 | 画像認識 | OpenCV (テンプレートマッチング) |
 | スクレイピング | requests + BeautifulSoup |
-| AI選出予想 | Claude API (claude-sonnet-4-6) |
+| AI選出予想 | LiteLLM (Anthropic / OpenAI / Google / Ollama) |
 | データ保存 | JSON ファイル |
 
 ## 起動方法
