@@ -137,7 +137,7 @@ export default function ModelSettings({
                       APIキー
                     </label>
                     <input
-                      type={focusedApiKeyProvider === provider ? 'text' : 'password'}
+                      type="text"
                       value={
                         focusedApiKeyProvider === provider
                           ? (settings.api_key ?? '')
