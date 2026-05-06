@@ -19,6 +19,7 @@ export function useDataManagement(): UseDataManagementReturn {
   const [fetchMessage, setFetchMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const wasScrapingRef = useRef(false)
 
   const loadStatus = useCallback(async () => {
     try {
@@ -43,11 +44,16 @@ export function useDataManagement(): UseDataManagementReturn {
 
   useEffect(() => {
     if (status?.scraping_in_progress) {
+      wasScrapingRef.current = true
       pollingRef.current = setInterval(loadStatus, 3000)
     } else {
       if (pollingRef.current) {
         clearInterval(pollingRef.current)
         pollingRef.current = null
+      }
+      if (wasScrapingRef.current) {
+        wasScrapingRef.current = false
+        loadPokemonList()
       }
     }
     return () => {
@@ -56,7 +62,7 @@ export function useDataManagement(): UseDataManagementReturn {
         pollingRef.current = null
       }
     }
-  }, [status?.scraping_in_progress, loadStatus])
+  }, [status?.scraping_in_progress, loadStatus, loadPokemonList])
 
   const triggerFetch = useCallback(async () => {
     setIsFetching(true)
