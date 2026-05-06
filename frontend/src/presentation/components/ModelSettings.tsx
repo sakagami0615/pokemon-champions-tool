@@ -89,7 +89,11 @@ export default function ModelSettings({
                       className="flex-1 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600 disabled:opacity-50"
                     >
                       {ollamaModels.length === 0 ? (
-                        <option value="">未取得</option>
+                        settings.model ? (
+                          <option value={settings.model}>{settings.model}</option>
+                        ) : (
+                          <option value="">未取得</option>
+                        )
                       ) : (
                         ollamaModels.map((m) => (
                           <option key={m} value={m}>
