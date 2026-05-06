@@ -18,6 +18,28 @@ interface Props {
   onSave: () => void
 }
 
+function ApiKeyInput({
+  apiKey,
+  onUpdate,
+}: {
+  apiKey: string | null
+  onUpdate: (key: string) => void
+}) {
+  const [focused, setFocused] = useState(false)
+
+  return (
+    <input
+      type="text"
+      value={focused ? (apiKey ?? '') : (apiKey ? '*'.repeat(10) : '')}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      onChange={(e) => onUpdate(e.target.value)}
+      placeholder="API Key here"
+      className="flex-1 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600"
+    />
+  )
+}
+
 export default function ModelSettings({
   config,
   ollamaModels,
@@ -33,8 +55,6 @@ export default function ModelSettings({
   onFetchOllamaModels,
   onSave,
 }: Props) {
-  const [focusedApiKeyProvider, setFocusedApiKeyProvider] = useState<Provider | null>(null)
-
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-semibold">モデル設定</h2>
@@ -136,18 +156,9 @@ export default function ModelSettings({
                     <label className="text-sm text-gray-600 dark:text-gray-400 w-28">
                       APIキー
                     </label>
-                    <input
-                      type="text"
-                      value={
-                        focusedApiKeyProvider === provider
-                          ? (settings.api_key ?? '')
-                          : (settings.api_key ? '*'.repeat(10) : '')
-                      }
-                      onFocus={() => setFocusedApiKeyProvider(provider)}
-                      onBlur={() => setFocusedApiKeyProvider(null)}
-                      onChange={(e) => onUpdateApiKey(provider, e.target.value)}
-                      placeholder="API Key here"
-                      className="flex-1 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600"
+                    <ApiKeyInput
+                      apiKey={settings.api_key}
+                      onUpdate={(key) => onUpdateApiKey(provider, key)}
                     />
                   </div>
                 </div>
