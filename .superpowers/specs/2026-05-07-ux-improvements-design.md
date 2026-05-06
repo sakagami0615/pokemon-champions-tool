@@ -6,7 +6,7 @@
 
 1. データ取得時の進捗状況表示（プログレスバー）
 2. システムプロンプト・ユーザープロンプトの設定ファイル管理
-3. 完了通知UIの変更（緑テキスト廃止・トースト導入）
+3. 完了通知UIの変更（トースト導入）
 
 ---
 
@@ -86,7 +86,6 @@ interface DataStatus {
 #### SettingsPage.tsx の変更
 
 - "スクレイピング実行中..." テキストを削除
-- "データ取得を開始しました" の緑テキストを削除
 - プログレスバーコンポーネントを追加（`scraping_in_progress: true` のとき表示）
 
 表示例：
@@ -162,8 +161,6 @@ user_prompt_template: |
 
 ### 要件
 
-- 「データ取得を開始しました」の緑テキストを削除する
-- 「保存しました」の緑テキストは現状維持（変更なし）
 - データ取得完了時にトースト（ポップアップ）で通知する
 - リロード後も完了通知が表示される
 
@@ -183,20 +180,6 @@ user_prompt_template: |
 - `last_scraped_at > last_notified_at`（または `last_notified_at` が未設定）の場合、トーストを表示して `last_notified_at` を更新
 
 この方式によりリロード後でも未通知の完了イベントを検知できる。
-
-#### 削除対象の緑テキスト
-
-| 箇所 | 内容 | 対応 |
-|---|---|---|
-| `SettingsPage.tsx` | "データ取得を開始しました" | 削除 |
-| `useDataManagement.ts` | `fetchMessage` state | 削除 |
-
-#### 変更しない箇所
-
-| 箇所 | 内容 |
-|---|---|
-| `ModelSettings.tsx` | "保存しました" の緑テキスト |
-| `useLLMConfig.ts` | `saveMessage` state |
 
 ---
 
@@ -221,7 +204,7 @@ user_prompt_template: |
 | ファイル | 変更種別 |
 |---|---|
 | `src/infrastructure/api/dataApi.ts` | 変更：DataStatus 型に3フィールド追加 |
-| `src/application/hooks/useDataManagement.ts` | 変更：fetchMessage 削除、トースト呼び出し追加 |
-| `src/presentation/pages/SettingsPage.tsx` | 変更：プログレスバー追加、緑テキスト削除 |
+| `src/application/hooks/useDataManagement.ts` | 変更：トースト呼び出し追加 |
+| `src/presentation/pages/SettingsPage.tsx` | 変更：プログレスバー追加 |
 | `src/App.tsx` | 変更：Toaster コンポーネント追加 |
 | `package.json` | 変更：sonner 追加 |
