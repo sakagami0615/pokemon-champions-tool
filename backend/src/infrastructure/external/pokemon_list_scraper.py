@@ -1,11 +1,14 @@
 import logging
 import re
+from typing import Callable
 from bs4 import BeautifulSoup
 from domain.entities.pokemon import PokemonInfo, BaseStats
 from infrastructure.external.base_scraper import BaseScraper
 from infrastructure.external.constants import POKEMON_LIST_URL
 
 _logger = logging.getLogger(__name__)
+
+ProgressCallback = Callable[[int, str], None]
 
 _STAT_KEY_MAP = {
     "HP": "hp",
@@ -25,26 +28,58 @@ _TYPE_ATTR_MAP = {
 
 
 class PokemonListScraper(BaseScraper):
-    def fetch_pokemon_list(self) -> tuple[list[PokemonInfo], list[PokemonInfo]]:
+    def fetch_pokemon_list(
+        self,
+        on_progress: ProgressCallback | None = None,
+    ) -> tuple[list[PokemonInfo], list[PokemonInfo]]:
         _logger.info("内定ポケモン一覧ページを取得中...")
+        if on_progress:
+            on_progress(0, "ポケモン一覧ページを取得中...")
         list_soup = self._fetch(POKEMON_LIST_URL)
         entries = self._parse_list_page(list_soup)
         normals, megas = self._group_entries(entries)
         _logger.info("一覧取得完了: 通常 %d 体 / メガ %d 体", len(normals), len(megas))
         _logger.info("通常ポケモンの詳細を取得中...")
-        normal_list = self._fetch_all(normals)
+        normal_list = self._fetch_all(
+            normals,
+            on_progress=on_progress,
+            progress_start=5,
+            progress_end=45,
+            step_label="通常ポケモン",
+        )
         _logger.info("メガシンカポケモンの詳細を取得中...")
-        mega_list = self._fetch_all(megas)
+        mega_list = self._fetch_all(
+            megas,
+            on_progress=on_progress,
+            progress_start=45,
+            progress_end=50,
+            step_label="メガポケモン",
+        )
         return normal_list, mega_list
 
-    def _fetch_all(self, grouped: list[tuple[int, str, str, str]]) -> list[PokemonInfo]:
+    def _fetch_all(
+        self,
+        grouped: list[tuple[int, str, str, str]],
+        on_progress: ProgressCallback | None = None,
+        progress_start: int = 0,
+        progress_end: int = 100,
+        step_label: str = "ポケモン",
+    ) -> list[PokemonInfo]:
         total = len(grouped)
         result: list[PokemonInfo] = []
         for i, (pokedex_id, name, url, sprite_filename) in enumerate(grouped, 1):
             _logger.info("[%3d/%3d] %s を取得中...", i, total, name)
             detail_soup = self._fetch(url)
-            info = self._parse_detail_page(detail_soup, pokedex_id=pokedex_id, name=name, sprite_filename=sprite_filename)
+            info = self._parse_detail_page(
+                detail_soup,
+                pokedex_id=pokedex_id,
+                name=name,
+                sprite_filename=sprite_filename,
+            )
             result.append(info)
+            if on_progress is not None and total > 0:
+                progress = progress_start + int((i / total) * (progress_end - progress_start))
+                on_progress(progress, f"{step_label}取得中... ({i}/{total})")
         return result
 
     def _parse_list_page(self, soup: BeautifulSoup) -> list[tuple[int, str, str]]:
