@@ -20,10 +20,7 @@ __pycache__/
 backend/uv.lock
 
 # Backend runtime data (UI-generated, not version controlled)
-backend/data/parties.json
-backend/data/pokemon_list.json
-backend/data/usage_rates/
-backend/data/sprites/
+backend/data/
 backend/scripts/output/
 
 # Frontend
