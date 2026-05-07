@@ -38,16 +38,26 @@ def fetch_data(background_tasks: BackgroundTasks):
 
 def _do_fetch() -> None:
     _state.scraping_in_progress = True
+    _state.scraping_progress = 0
+    _state.scraping_step = "ポケモン一覧ページを取得中..."
+
+    def on_progress(progress: int, step: str) -> None:
+        _state.scraping_progress = progress
+        _state.scraping_step = step
+
     try:
         try:
             use_case = ScrapePokemonListUseCase(
                 scraper=PokemonListScraper(sprites_dir=_sprites_dir),
                 repository=_pokemon_list_repo,
             )
-            use_case.execute()
+            use_case.execute(on_progress=on_progress)
             _logger.info("ポケモン一覧のスクレイピングが完了しました")
         except Exception:
             _logger.exception("ポケモン一覧スクレイピングでエラーが発生しました")
+
+        _state.scraping_progress = 50
+        _state.scraping_step = "使用率データ取得中..."
 
         try:
             scraper = GameWithScraper(sprites_dir=_sprites_dir)
@@ -55,6 +65,10 @@ def _do_fetch() -> None:
             _logger.exception("GameWithScraper の初期化に失敗しました")
             return
         _fetch_and_save_usage_data(scraper)
+
+        _state.scraping_progress = 100
+        _state.scraping_step = ""
+        _state.last_scraped_at = datetime.now().isoformat()
     finally:
         _state.scraping_in_progress = False
 
@@ -109,10 +123,7 @@ def data_status():
     dates_detail = []
     for date in available_dates:
         usage_data = _usage_repo.get_usage_data_by_date(date)
-        if usage_data:
-            top_pokemon = [{"name": p.name} for p in usage_data.pokemons[:3]]
-        else:
-            top_pokemon = []
+        top_pokemon = [{"name": p.name} for p in usage_data.pokemons[:3]] if usage_data else []
         dates_detail.append({
             "date": date,
             "pokemon_count": pokemon_count,
@@ -121,6 +132,9 @@ def data_status():
 
     return {
         "scraping_in_progress": _state.scraping_in_progress,
+        "scraping_progress": _state.scraping_progress,
+        "scraping_step": _state.scraping_step,
+        "last_scraped_at": _state.last_scraped_at,
         "selected_date": _state.selected_date,
         "available_dates": available_dates,
         "dates_detail": dates_detail,
