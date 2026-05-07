@@ -3,8 +3,8 @@ import { toast } from 'sonner'
 import { fetchData, getDataStatus, selectDate, getPokemonList, DataStatus } from '../../infrastructure/api/dataApi'
 import type { PokemonListEntry } from '../../domain/entities/pokemon'
 
-const LS_SCRAPING_PENDING = LS_SCRAPING_PENDING
-const LS_LAST_NOTIFIED_AT = LS_LAST_NOTIFIED_AT
+const LS_SCRAPING_PENDING = 'scraping_pending'
+const LS_LAST_NOTIFIED_AT = 'last_notified_at'
 
 interface UseDataManagementReturn {
   status: DataStatus | null

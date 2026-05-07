@@ -88,9 +88,11 @@ async def test_fetch_data_endpoint_returns_started():
 
 
 def test_do_fetch_handles_scraper_init_exception():
-    with patch("presentation.routers.data.GameWithScraper", side_effect=Exception("init error")):
-        from presentation.routers.data import _do_fetch
-        _do_fetch()
+    with patch("presentation.routers.data.ScrapePokemonListUseCase") as mock_uc_cls:
+        mock_uc_cls.return_value = MagicMock()
+        with patch("presentation.routers.data.GameWithScraper", side_effect=Exception("init error")):
+            from presentation.routers.data import _do_fetch
+            _do_fetch()
 
 
 def test_do_fetch_handles_scraper_exception():
