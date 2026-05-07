@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Toaster } from 'sonner'
 import { useDarkMode } from './presentation/hooks/useDarkMode'
 import PredictionPage from './presentation/pages/PredictionPage'
 import PartyPage from './presentation/pages/PartyPage'
@@ -13,6 +14,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <Toaster position="top-right" richColors />
       <Header dark={dark} onToggleDark={toggle} page={page} onChangePage={setPage} />
       <main className="p-4">
         {page === 'prediction' && <PredictionPage />}
