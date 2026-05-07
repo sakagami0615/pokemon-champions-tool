@@ -2,7 +2,9 @@ from unittest.mock import MagicMock
 from application.use_cases.predict_use_case import PredictUseCase
 from domain.entities.pokemon import UsageData, UsageEntry, RatedItem, EvSpread
 from domain.entities.party import PredictionResult
+from domain.entities.prompt_config import PromptConfig
 from domain.repositories.llm_client import ILLMClient
+from domain.repositories.prompt_config_repository import IPromptConfigRepository
 
 
 MOCK_LLM_RESPONSE = """
@@ -10,6 +12,17 @@ MOCK_LLM_RESPONSE = """
 パターン2: ピカチュウ, リザードン, イワーク
 パターン3: フシギバナ, カメックス, ゲンガー
 """
+
+DEFAULT_PROMPT_CONFIG = PromptConfig(
+    system_prompt="テスト用システムプロンプト",
+    user_prompt_template="【相手パーティ】{opponent_party}\n【自分のパーティ】{my_party}\n【使用率】{usage_text}",
+)
+
+
+def _make_mock_prompt_repo(config: PromptConfig = DEFAULT_PROMPT_CONFIG) -> IPromptConfigRepository:
+    mock = MagicMock(spec=IPromptConfigRepository)
+    mock.get_config.return_value = config
+    return mock
 
 
 def _make_usage_data() -> UsageData:
@@ -38,7 +51,7 @@ def _make_mock_client(response: str = MOCK_LLM_RESPONSE) -> ILLMClient:
 
 
 def test_predict_returns_three_patterns():
-    use_case = PredictUseCase(llm_client=_make_mock_client())
+    use_case = PredictUseCase(llm_client=_make_mock_client(), prompt_config_repo=_make_mock_prompt_repo())
     result = use_case.predict(
         opponent_party=["リザードン", "カメックス", "フシギバナ", "ピカチュウ", "イワーク", "ゲンガー"],
         my_party=["カビゴン", "ラプラス", "サンダー", "ゲンガー", "フシギバナ", "ストライク"],
@@ -52,7 +65,7 @@ def test_predict_returns_three_patterns():
 
 def test_predict_calls_generate_with_both_parties():
     mock_client = _make_mock_client()
-    use_case = PredictUseCase(llm_client=mock_client)
+    use_case = PredictUseCase(llm_client=mock_client, prompt_config_repo=_make_mock_prompt_repo())
     use_case.predict(
         opponent_party=["リザードン", "カメックス", "フシギバナ", "ピカチュウ", "イワーク", "ゲンガー"],
         my_party=["カビゴン", "ラプラス", "サンダー", "ゲンガー", "フシギバナ", "ストライク"],
@@ -62,3 +75,19 @@ def test_predict_calls_generate_with_both_parties():
     _system, user = mock_client.generate.call_args[0]
     assert "リザードン" in user
     assert "カビゴン" in user
+
+
+def test_predict_calls_generate_with_system_prompt():
+    mock_client = _make_mock_client()
+    custom_config = PromptConfig(
+        system_prompt="カスタムシステムプロンプト",
+        user_prompt_template="【相手】{opponent_party}\n【自分】{my_party}\n{usage_text}",
+    )
+    use_case = PredictUseCase(llm_client=mock_client, prompt_config_repo=_make_mock_prompt_repo(custom_config))
+    use_case.predict(
+        opponent_party=["リザードン", "カメックス", "フシギバナ", "ピカチュウ", "イワーク", "ゲンガー"],
+        my_party=["カビゴン", "ラプラス", "サンダー", "ゲンガー", "フシギバナ", "ストライク"],
+        usage_data=_make_usage_data(),
+    )
+    _system, _ = mock_client.generate.call_args[0]
+    assert _system == "カスタムシステムプロンプト"
