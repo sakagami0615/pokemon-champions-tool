@@ -3,6 +3,9 @@ import { toast } from 'sonner'
 import { fetchData, getDataStatus, selectDate, getPokemonList, DataStatus } from '../../infrastructure/api/dataApi'
 import type { PokemonListEntry } from '../../domain/entities/pokemon'
 
+const LS_SCRAPING_PENDING = LS_SCRAPING_PENDING
+const LS_LAST_NOTIFIED_AT = LS_LAST_NOTIFIED_AT
+
 interface UseDataManagementReturn {
   status: DataStatus | null
   pokemonList: PokemonListEntry[]
@@ -22,13 +25,13 @@ export function useDataManagement(): UseDataManagementReturn {
 
   const maybeNotify = useCallback((s: DataStatus) => {
     if (
-      localStorage.getItem('scraping_pending') === 'true' &&
+      localStorage.getItem(LS_SCRAPING_PENDING) === 'true' &&
       s.last_scraped_at !== null &&
-      s.last_scraped_at !== localStorage.getItem('last_notified_at')
+      s.last_scraped_at !== localStorage.getItem(LS_LAST_NOTIFIED_AT)
     ) {
       toast.success('データ取得が完了しました')
-      localStorage.setItem('last_notified_at', s.last_scraped_at)
-      localStorage.removeItem('scraping_pending')
+      localStorage.setItem(LS_LAST_NOTIFIED_AT, s.last_scraped_at)
+      localStorage.removeItem(LS_SCRAPING_PENDING)
     }
   }, [])
 
@@ -91,7 +94,7 @@ export function useDataManagement(): UseDataManagementReturn {
     setError(null)
     try {
       await fetchData()
-      localStorage.setItem('scraping_pending', 'true')
+      localStorage.setItem(LS_SCRAPING_PENDING, 'true')
       await loadStatus()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'データ取得の開始に失敗しました')
