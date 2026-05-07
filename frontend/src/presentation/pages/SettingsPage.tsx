@@ -13,7 +13,6 @@ export default function SettingsPage() {
     status,
     pokemonList,
     isFetching,
-    fetchMessage,
     error: dataError,
     triggerFetch,
     handleSelectDate,
@@ -87,7 +86,6 @@ export default function SettingsPage() {
               />
             )}
           </div>
-          {fetchMessage && <p className="text-sm text-green-600">{fetchMessage}</p>}
           {dataError && <p className="text-sm text-red-500">{dataError}</p>}
         </div>
 
