@@ -72,7 +72,7 @@ export default function SettingsPage() {
         <h1 className="text-xl font-bold">データ管理</h1>
 
         <div className="space-y-2">
-          <div className="flex items-center gap-4">
+          <div className="space-y-2">
             <button
               onClick={triggerFetch}
               disabled={isFetching}
