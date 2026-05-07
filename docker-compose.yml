@@ -8,6 +8,7 @@ services:
       - ./backend/data:/app/data
       - ./backend/tests:/app/tests
       - ./backend/scripts:/app/scripts
+      - ./backend/config:/app/config
     env_file:
       - path: .env
         required: false
