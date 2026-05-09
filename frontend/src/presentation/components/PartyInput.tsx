@@ -7,10 +7,11 @@ interface Props {
   party: string[]
   onChange: (party: string[]) => void
   pokemonList: PokemonListEntry[]
-  onImageUpload: (file: File) => Promise<RecognizedParties>
+  label?: string
+  onImageUpload?: (file: File) => Promise<RecognizedParties>
 }
 
-export default function PartyInput({ party, onChange, pokemonList, onImageUpload }: Props) {
+export default function PartyInput({ party, onChange, pokemonList, label = '相手パーティ', onImageUpload }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const update = (index: number, name: string) => {
@@ -19,9 +20,9 @@ export default function PartyInput({ party, onChange, pokemonList, onImageUpload
     onChange(next)
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file || !onImageUpload) return
     try {
       const result = await onImageUpload(file)
       onChange(result.opponentParty)
@@ -35,14 +36,18 @@ export default function PartyInput({ party, onChange, pokemonList, onImageUpload
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">相手パーティ</h2>
-        <button
-          onClick={() => fileRef.current?.click()}
-          className="text-xs px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
-        >
-          画像から入力
-        </button>
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+        <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">{label}</h2>
+        {onImageUpload && (
+          <>
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="text-xs px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+            >
+              画像から入力
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+          </>
+        )}
       </div>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {party.map((name, i) => (
