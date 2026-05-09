@@ -19,6 +19,8 @@ class ImageRecognizer(IImageRecognizer):
     def _load_templates(self) -> dict[str, np.ndarray]:
         templates = {}
         for path in self.sprites_dir.glob("*.png"):
+            if "mega" in path.stem:
+                continue
             img = cv2.imread(str(path))
             if img is not None:
                 templates[path.stem] = img
