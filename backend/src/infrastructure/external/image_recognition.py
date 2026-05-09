@@ -34,6 +34,10 @@ class ImageRecognizer(IImageRecognizer):
         return image
 
     def recognize(self, image: np.ndarray) -> RecognitionResult:
+        """
+        画像中からテンプレートマッチングで上位 top_n 体のポケモンを検出する。
+        見つかったポケモンが top_n 未満の場合は空文字で埋める。
+        """
         matches: list[tuple[str, float, tuple]] = []
 
         for name, template in self.templates.items():

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import cv2
 from infrastructure.external.image_recognition import ImageRecognizer
-from domain.repositories.image_recognizer import RecognitionResult, InvalidImageError
+from domain.repositories.image_recognizer import RecognitionResult, InvalidImageError, SelectionRecognitionResult
 
 
 @pytest.fixture
@@ -58,9 +58,6 @@ def test_recognize_from_bytes_raises_on_empty_bytes(sprites_dir):
     recognizer = ImageRecognizer(sprites_dir=sprites_dir)
     with pytest.raises(InvalidImageError):
         recognizer.recognize_from_bytes(b"")
-
-
-from domain.repositories.image_recognizer import SelectionRecognitionResult
 
 
 def test_recognize_selection_from_bytes_returns_both_parties(sprites_dir):
