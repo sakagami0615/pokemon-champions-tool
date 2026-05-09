@@ -71,7 +71,9 @@ export default function PredictionPage() {
         </p>
       )}
 
-      <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonList={pokemonList} onImageUpload={handleImageUpload} />
+      <div className="border rounded-xl p-4 dark:border-gray-700">
+        <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonList={pokemonList} onImageUpload={handleImageUpload} />
+      </div>
 
       <div className="border rounded-xl p-4 dark:border-gray-700 space-y-3">
         <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">自分のパーティ</h2>
