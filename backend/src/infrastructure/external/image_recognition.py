@@ -44,6 +44,9 @@ class ImageRecognizer(IImageRecognizer):
             h, w = template.shape[:2]
             if image.shape[0] < h or image.shape[1] < w:
                 continue
+            # TM_CCORR_NORMED is used instead of TM_CCOEFF_NORMED because
+            # TM_CCOEFF_NORMED produces false positives when matching solid-color
+            # sprites against dark/uniform backgrounds.
             result = cv2.matchTemplate(image, template, cv2.TM_CCORR_NORMED)
             _, max_val, _, max_loc = cv2.minMaxLoc(result)
             if max_val >= self.threshold:
