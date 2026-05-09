@@ -33,27 +33,37 @@ async def test_create_party():
 
 
 @pytest.mark.asyncio
-async def test_recognize_returns_six_names():
-    mock_result = MagicMock()
-    mock_result.names = ["リザードン", "カメックス", "フシギバナ", "ピカチュウ", "ゲンガー", "カビゴン"]
-    mock_result.confidences = [0.9] * 6
+async def test_recognize_returns_both_parties():
+    my_result = MagicMock()
+    my_result.names = ["リザードン", "ゲッコウガ", "ルチャブル", "ゾロアーク", "ブラッキー", "ギルガルド"]
+    my_result.confidences = [0.9] * 6
+    opp_result = MagicMock()
+    opp_result.names = ["ガブリアス", "カイリュー", "ミミッキュ", "サーナイト", "ドリュウズ", "ハッサム"]
+    opp_result.confidences = [0.85] * 6
+    selection_result = MagicMock()
+    selection_result.my_party = my_result
+    selection_result.opponent_party = opp_result
 
     with patch("presentation.routers.recognition.recognizer") as mock_rec:
-        mock_rec.recognize.return_value = mock_result
+        mock_rec.recognize_selection.return_value = selection_result
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp = await client.post(
                 "/api/recognize",
                 files={"file": ("test.jpg", b"fake-image-data", "image/jpeg")},
             )
     assert resp.status_code == 200
-    assert len(resp.json()["names"]) == 6
+    data = resp.json()
+    assert "my_party" in data
+    assert "opponent_party" in data
+    assert len(data["my_party"]["names"]) == 6
+    assert len(data["opponent_party"]["names"]) == 6
 
 
 @pytest.mark.asyncio
 async def test_recognize_returns_400_on_invalid_image():
     from domain.repositories.image_recognizer import InvalidImageError
     with patch("presentation.routers.recognition.recognizer") as mock_rec:
-        mock_rec.recognize.side_effect = InvalidImageError("bad image")
+        mock_rec.recognize_selection.side_effect = InvalidImageError("bad image")
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp = await client.post(
                 "/api/recognize",
