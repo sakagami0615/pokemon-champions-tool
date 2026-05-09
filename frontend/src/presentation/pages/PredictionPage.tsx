@@ -31,6 +31,8 @@ export default function PredictionPage() {
     return recognized
   }
 
+  const displayParty = effectiveMyParty.filter(Boolean)
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {status !== null && !hasData && (
@@ -62,12 +64,12 @@ export default function PredictionPage() {
             ))}
           </div>
         )}
-        {effectiveMyParty.filter(Boolean).length > 0 && (
+        {displayParty.length > 0 && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 justify-items-center pt-4 border-t dark:border-gray-700">
-            {effectiveMyParty.filter(Boolean).map((pokemon, i) => {
+            {displayParty.map((pokemon, i) => {
               const spriteSrc = pokemonList.find((e) => e.name === pokemon)?.sprite_path
               return (
-                <div key={i} className="text-center">
+                <div key={`${i}-${pokemon}`} className="text-center">
                   {spriteSrc && (
                     <img
                       src={`/${spriteSrc}`}
