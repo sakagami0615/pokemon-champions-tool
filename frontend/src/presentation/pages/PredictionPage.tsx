@@ -6,9 +6,11 @@ import { useParty } from '../../application/hooks/useParty'
 import { usePokemonData } from '../../application/hooks/usePokemonData'
 import { useRecognition } from '../../application/hooks/useRecognition'
 import { useDataManagement } from '../../application/hooks/useDataManagement'
+import type { RecognizedParties } from '../../application/hooks/useRecognition'
 
 export default function PredictionPage() {
   const [opponentParty, setOpponentParty] = useState<string[]>(Array(6).fill(''))
+  const [cameraMyParty, setCameraMyParty] = useState<string[]>(Array(6).fill(''))
   const { result, loading, error, handlePredict } = usePredict()
   const { parties, selectedPartyId, myParty, selectParty } = useParty()
   const { pokemonList } = usePokemonData()
@@ -16,11 +18,18 @@ export default function PredictionPage() {
   const { status } = useDataManagement()
 
   const hasData = status !== null && status.available_dates.length > 0
+  const effectiveMyParty = selectedPartyId !== null ? myParty : cameraMyParty
 
   const isReady =
     hasData &&
     opponentParty.filter(Boolean).length >= 3 &&
-    selectedPartyId !== null
+    effectiveMyParty.filter(Boolean).length >= 1
+
+  const handleImageUpload = async (file: File): Promise<RecognizedParties> => {
+    const recognized = await recognizeImage(file)
+    setCameraMyParty(recognized.myParty)
+    return recognized
+  }
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -30,7 +39,7 @@ export default function PredictionPage() {
         </p>
       )}
 
-      <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonList={pokemonList} onImageUpload={recognizeImage} />
+      <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonList={pokemonList} onImageUpload={handleImageUpload} />
 
       <div className="border rounded-xl p-4 dark:border-gray-700 space-y-3">
         <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">自分のパーティ</h2>
@@ -53,9 +62,9 @@ export default function PredictionPage() {
             ))}
           </div>
         )}
-        {selectedPartyId && (
+        {effectiveMyParty.filter(Boolean).length > 0 && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 justify-items-center pt-4 border-t dark:border-gray-700">
-            {myParty.filter(Boolean).map((pokemon, i) => {
+            {effectiveMyParty.filter(Boolean).map((pokemon, i) => {
               const spriteSrc = pokemonList.find((e) => e.name === pokemon)?.sprite_path
               return (
                 <div key={i} className="text-center">
@@ -77,7 +86,7 @@ export default function PredictionPage() {
       {error && <p className="text-red-500 text-sm">{error}</p>}
 
       <button
-        onClick={() => handlePredict(opponentParty, myParty)}
+        onClick={() => handlePredict(opponentParty, effectiveMyParty)}
         disabled={loading || !isReady}
         className="w-full py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold disabled:opacity-50"
       >
