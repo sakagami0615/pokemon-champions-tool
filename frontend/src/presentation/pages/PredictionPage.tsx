@@ -73,7 +73,7 @@ export default function PredictionPage() {
   const handleSelectParty = (p: Party) => {
     selectParty(p)
     setMyPartySlots([...p.pokemons, ...Array(6).fill('')].slice(0, 6))
-    setMyPartySources(Array(6).fill(true))
+    setMyPartySources(Array(6).fill(false))
     setCameraSelected(false)
   }
 
