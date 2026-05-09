@@ -75,7 +75,7 @@ export default function PredictionPage() {
         <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonList={pokemonList} onImageUpload={handleImageUpload} />
       </div>
 
-      <div className="border rounded-xl p-4 dark:border-gray-700 space-y-3">
+      <div className="space-y-2">
         <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">自分のパーティ</h2>
         {(parties.length > 0 || cameraMyParty.some(Boolean)) && (
           <div className="flex gap-2 flex-wrap">
@@ -106,11 +106,13 @@ export default function PredictionPage() {
             ))}
           </div>
         )}
-        <PartyInput
-          party={myPartySlots}
-          onChange={setMyPartySlots}
-          pokemonList={pokemonList}
-        />
+        <div className="border rounded-xl p-4 dark:border-gray-700">
+          <PartyInput
+            party={myPartySlots}
+            onChange={setMyPartySlots}
+            pokemonList={pokemonList}
+          />
+        </div>
       </div>
 
       {error && <p className="text-red-500 text-sm">{error}</p>}
