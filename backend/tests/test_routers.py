@@ -287,9 +287,10 @@ async def test_predict_returns_400_when_api_key_not_set(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_data_status_dates_detail_structure():
+async def test_data_status_dates_detail_structure(tmp_path):
     from domain.entities.pokemon import UsageData, UsageEntry, PokemonList, PokemonInfo, BaseStats
-    import presentation.routers.data as rd
+    from infrastructure.persistence.json_usage_repository import JsonUsageRepository
+    from infrastructure.persistence.json_pokemon_list_repository import JsonPokemonListRepository
 
     entry = UsageEntry(
         name="ピカチュウ",
@@ -315,11 +316,15 @@ async def test_data_status_dates_detail_structure():
         ],
         mega_pokemons=[]
     )
-    rd._usage_repo.save_usage_data(usage)
-    rd._pokemon_list_repo.save_pokemon_list(plist)
+    tmp_usage_repo = JsonUsageRepository(data_dir=tmp_path)
+    tmp_pokemon_list_repo = JsonPokemonListRepository(data_dir=tmp_path)
+    tmp_usage_repo.save_usage_data(usage)
+    tmp_pokemon_list_repo.save_pokemon_list(plist)
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        resp = await client.get("/api/data/status")
+    with patch("presentation.routers.data._usage_repo", tmp_usage_repo), \
+         patch("presentation.routers.data._pokemon_list_repo", tmp_pokemon_list_repo):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get("/api/data/status")
 
     assert resp.status_code == 200
     data = resp.json()
