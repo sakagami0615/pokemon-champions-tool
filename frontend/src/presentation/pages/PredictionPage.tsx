@@ -33,6 +33,7 @@ export default function PredictionPage() {
   useEffect(() => {
     if (!initializedRef.current && myParty.some(Boolean)) {
       setMyPartySlots([...myParty, ...Array(6).fill('')].slice(0, 6))
+      setMyPartySources(Array(6).fill(false))
       initializedRef.current = true
     }
   }, [myParty])
