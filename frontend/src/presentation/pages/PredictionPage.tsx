@@ -6,7 +6,6 @@ import { useParty } from '../../application/hooks/useParty'
 import { usePokemonData } from '../../application/hooks/usePokemonData'
 import { useRecognition } from '../../application/hooks/useRecognition'
 import { useDataManagement } from '../../application/hooks/useDataManagement'
-import type { RecognizedParties } from '../../application/hooks/useRecognition'
 import type { Party } from '../../domain/entities/party'
 
 export default function PredictionPage() {
@@ -20,6 +19,7 @@ export default function PredictionPage() {
   const { recognizeImage } = useRecognition()
   const { status } = useDataManagement()
   const initializedRef = useRef(false)
+  const opponentFileRef = useRef<HTMLInputElement>(null)
 
   const hasData = status !== null && status.available_dates.length > 0
 
@@ -40,15 +40,23 @@ export default function PredictionPage() {
     return pokemonList.find((p) => p.sprite_path === `sprites/${stem}.png`)?.name ?? stem
   }
 
-  const handleImageUpload = async (file: File): Promise<RecognizedParties> => {
-    const recognized = await recognizeImage(file)
-    const mappedOpponent = recognized.opponentParty.map(stemToName)
-    const mappedMy = recognized.myParty.map(stemToName)
-    setCameraMyParty(mappedMy)
-    setMyPartySlots(mappedMy)
-    setCameraSelected(true)
-    clearSelectedParty()
-    return { opponentParty: mappedOpponent, myParty: mappedMy }
+  const handleOpponentFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const recognized = await recognizeImage(file)
+      const mappedOpponent = recognized.opponentParty.map(stemToName)
+      const mappedMy = recognized.myParty.map(stemToName)
+      setOpponentParty(mappedOpponent)
+      setCameraMyParty(mappedMy)
+      setMyPartySlots(mappedMy)
+      setCameraSelected(true)
+      clearSelectedParty()
+    } catch (err) {
+      alert(`画像認識に失敗しました: ${err}`)
+    } finally {
+      if (opponentFileRef.current) opponentFileRef.current.value = ''
+    }
   }
 
   const handleSelectCamera = () => {
@@ -71,11 +79,22 @@ export default function PredictionPage() {
         </p>
       )}
 
-      <div className="border rounded-xl p-4 dark:border-gray-700">
-        <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonList={pokemonList} onImageUpload={handleImageUpload} />
+      <div className="space-y-2">
+        <div className="flex justify-end">
+          <button
+            onClick={() => opponentFileRef.current?.click()}
+            className="text-xs px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+          >
+            画像から入力
+          </button>
+          <input ref={opponentFileRef} type="file" accept="image/*" className="hidden" onChange={handleOpponentFileChange} />
+        </div>
+        <div className="border rounded-xl p-4 dark:border-gray-700">
+          <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonList={pokemonList} label="相手のパーティ" />
+        </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="border rounded-xl p-4 dark:border-gray-700 space-y-3">
         <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">自分のパーティ</h2>
         {(parties.length > 0 || cameraMyParty.some(Boolean)) && (
           <div className="flex gap-2 flex-wrap">
@@ -106,13 +125,11 @@ export default function PredictionPage() {
             ))}
           </div>
         )}
-        <div className="border rounded-xl p-4 dark:border-gray-700">
-          <PartyInput
-            party={myPartySlots}
-            onChange={setMyPartySlots}
-            pokemonList={pokemonList}
-          />
-        </div>
+        <PartyInput
+          party={myPartySlots}
+          onChange={setMyPartySlots}
+          pokemonList={pokemonList}
+        />
       </div>
 
       {error && <p className="text-red-500 text-sm">{error}</p>}
