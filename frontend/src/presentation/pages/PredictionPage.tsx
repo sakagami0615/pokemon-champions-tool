@@ -12,13 +12,14 @@ import type { Party } from '../../domain/entities/party'
 export default function PredictionPage() {
   const [opponentParty, setOpponentParty] = useState<string[]>(Array(6).fill(''))
   const [myPartySlots, setMyPartySlots] = useState<string[]>(Array(6).fill(''))
+  const [cameraMyParty, setCameraMyParty] = useState<string[]>(Array(6).fill(''))
+  const [cameraSelected, setCameraSelected] = useState(false)
   const { result, loading, error, handlePredict } = usePredict()
   const { parties, selectedPartyId, myParty, selectParty, clearSelectedParty } = useParty()
   const { pokemonList } = usePokemonData()
   const { recognizeImage } = useRecognition()
   const { status } = useDataManagement()
   const initializedRef = useRef(false)
-  const myPartyFileRef = useRef<HTMLInputElement>(null)
 
   const hasData = status !== null && status.available_dates.length > 0
 
@@ -43,29 +44,23 @@ export default function PredictionPage() {
     const recognized = await recognizeImage(file)
     const mappedOpponent = recognized.opponentParty.map(stemToName)
     const mappedMy = recognized.myParty.map(stemToName)
+    setCameraMyParty(mappedMy)
     setMyPartySlots(mappedMy)
+    setCameraSelected(true)
     clearSelectedParty()
     return { opponentParty: mappedOpponent, myParty: mappedMy }
   }
 
-  const handleMyPartyFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    try {
-      const recognized = await recognizeImage(file)
-      const mappedMy = recognized.myParty.map(stemToName)
-      setMyPartySlots(mappedMy)
-      clearSelectedParty()
-    } catch (err) {
-      alert(`画像認識に失敗しました: ${err}`)
-    } finally {
-      if (myPartyFileRef.current) myPartyFileRef.current.value = ''
-    }
+  const handleSelectCamera = () => {
+    setMyPartySlots(cameraMyParty)
+    setCameraSelected(true)
+    clearSelectedParty()
   }
 
   const handleSelectParty = (p: Party) => {
     selectParty(p)
     setMyPartySlots([...p.pokemons, ...Array(6).fill('')].slice(0, 6))
+    setCameraSelected(false)
   }
 
   return (
@@ -79,24 +74,27 @@ export default function PredictionPage() {
       <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonList={pokemonList} onImageUpload={handleImageUpload} />
 
       <div className="border rounded-xl p-4 dark:border-gray-700 space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">自分のパーティ</h2>
-          <button
-            onClick={() => myPartyFileRef.current?.click()}
-            className="text-xs px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
-          >
-            画像から入力
-          </button>
-          <input ref={myPartyFileRef} type="file" accept="image/*" className="hidden" onChange={handleMyPartyFileChange} />
-        </div>
-        {parties.length > 0 && (
+        <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">自分のパーティ</h2>
+        {(parties.length > 0 || cameraMyParty.some(Boolean)) && (
           <div className="flex gap-2 flex-wrap">
+            {cameraMyParty.some(Boolean) && (
+              <button
+                onClick={handleSelectCamera}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                  cameraSelected
+                    ? 'bg-indigo-600 text-white border-indigo-600'
+                    : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                画像入力
+              </button>
+            )}
             {parties.map((p) => (
               <button
                 key={p.id}
                 onClick={() => handleSelectParty(p)}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-                  selectedPartyId === p.id
+                  !cameraSelected && selectedPartyId === p.id
                     ? 'bg-indigo-600 text-white border-indigo-600'
                     : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
