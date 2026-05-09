@@ -11,7 +11,7 @@ interface Props {
   onImageUpload?: (file: File) => Promise<RecognizedParties>
 }
 
-export default function PartyInput({ party, onChange, pokemonList, label = '相手パーティ', onImageUpload }: Props) {
+export default function PartyInput({ party, onChange, pokemonList, label, onImageUpload }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const update = (index: number, name: string) => {
@@ -35,20 +35,22 @@ export default function PartyInput({ party, onChange, pokemonList, label = '相�
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">{label}</h2>
-        {onImageUpload && (
-          <>
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="text-xs px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
-            >
-              画像から入力
-            </button>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-          </>
-        )}
-      </div>
+      {(label || onImageUpload) && (
+        <div className="flex items-center justify-between">
+          {label && <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">{label}</h2>}
+          {onImageUpload && (
+            <>
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="text-xs px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+              >
+                画像から入力
+              </button>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+            </>
+          )}
+        </div>
+      )}
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {party.map((name, i) => (
           <PokemonSlot key={i} value={name} onChange={v => update(i, v)} pokemonList={pokemonList} />
