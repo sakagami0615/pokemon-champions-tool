@@ -1,12 +1,13 @@
 import { useRef } from 'react'
 import PokemonSlot from './PokemonSlot'
 import type { PokemonListEntry } from '../../domain/entities/pokemon'
+import type { RecognizedParties } from '../../application/hooks/useRecognition'
 
 interface Props {
   party: string[]
   onChange: (party: string[]) => void
   pokemonList: PokemonListEntry[]
-  onImageUpload: (file: File) => Promise<string[]>
+  onImageUpload: (file: File) => Promise<RecognizedParties>
 }
 
 export default function PartyInput({ party, onChange, pokemonList, onImageUpload }: Props) {
@@ -22,8 +23,8 @@ export default function PartyInput({ party, onChange, pokemonList, onImageUpload
     const file = e.target.files?.[0]
     if (!file) return
     try {
-      const names = await onImageUpload(file)
-      onChange(names)
+      const result = await onImageUpload(file)
+      onChange(result.opponentParty)
     } catch (err) {
       alert(`画像認識に失敗しました: ${err}`)
     } finally {
