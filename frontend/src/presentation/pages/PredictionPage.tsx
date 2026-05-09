@@ -10,7 +10,9 @@ import type { Party } from '../../domain/entities/party'
 
 export default function PredictionPage() {
   const [opponentParty, setOpponentParty] = useState<string[]>(Array(6).fill(''))
+  const [opponentSources, setOpponentSources] = useState<boolean[]>(Array(6).fill(true))
   const [myPartySlots, setMyPartySlots] = useState<string[]>(Array(6).fill(''))
+  const [myPartySources, setMyPartySources] = useState<boolean[]>(Array(6).fill(true))
   const [cameraMyParty, setCameraMyParty] = useState<string[]>(Array(6).fill(''))
   const [cameraSelected, setCameraSelected] = useState(false)
   const { result, loading, error, handlePredict } = usePredict()
@@ -48,8 +50,10 @@ export default function PredictionPage() {
       const mappedOpponent = recognized.opponentParty.map(stemToName)
       const mappedMy = recognized.myParty.map(stemToName)
       setOpponentParty(mappedOpponent)
+      setOpponentSources(Array(6).fill(false))
       setCameraMyParty(mappedMy)
       setMyPartySlots(mappedMy)
+      setMyPartySources(Array(6).fill(false))
       setCameraSelected(true)
       clearSelectedParty()
     } catch (err) {
@@ -61,6 +65,7 @@ export default function PredictionPage() {
 
   const handleSelectCamera = () => {
     setMyPartySlots(cameraMyParty)
+    setMyPartySources(Array(6).fill(false))
     setCameraSelected(true)
     clearSelectedParty()
   }
@@ -68,8 +73,15 @@ export default function PredictionPage() {
   const handleSelectParty = (p: Party) => {
     selectParty(p)
     setMyPartySlots([...p.pokemons, ...Array(6).fill('')].slice(0, 6))
+    setMyPartySources(Array(6).fill(true))
     setCameraSelected(false)
   }
+
+  const markOpponentManual = (index: number) =>
+    setOpponentSources(prev => { const next = [...prev]; next[index] = true; return next })
+
+  const markMyPartyManual = (index: number) =>
+    setMyPartySources(prev => { const next = [...prev]; next[index] = true; return next })
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -90,7 +102,7 @@ export default function PredictionPage() {
           <input ref={opponentFileRef} type="file" accept="image/*" className="hidden" onChange={handleOpponentFileChange} />
         </div>
         <div className="border rounded-xl p-4 dark:border-gray-700">
-          <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonList={pokemonList} label="相手のパーティ" />
+          <PartyInput party={opponentParty} onChange={setOpponentParty} pokemonList={pokemonList} label="相手のパーティ" sources={opponentSources} onMarkManual={markOpponentManual} />
         </div>
       </div>
 
@@ -129,6 +141,8 @@ export default function PredictionPage() {
           party={myPartySlots}
           onChange={setMyPartySlots}
           pokemonList={pokemonList}
+          sources={myPartySources}
+          onMarkManual={markMyPartyManual}
         />
       </div>
 

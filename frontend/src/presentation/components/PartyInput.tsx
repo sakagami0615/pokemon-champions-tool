@@ -9,15 +9,18 @@ interface Props {
   pokemonList: PokemonListEntry[]
   label?: string
   onImageUpload?: (file: File) => Promise<RecognizedParties>
+  sources?: boolean[]
+  onMarkManual?: (index: number) => void
 }
 
-export default function PartyInput({ party, onChange, pokemonList, label, onImageUpload }: Props) {
+export default function PartyInput({ party, onChange, pokemonList, label, onImageUpload, sources, onMarkManual }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const update = (index: number, name: string) => {
     const next = [...party]
     next[index] = name
     onChange(next)
+    onMarkManual?.(index)
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,7 +56,7 @@ export default function PartyInput({ party, onChange, pokemonList, label, onImag
       )}
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {party.map((name, i) => (
-          <PokemonSlot key={i} value={name} onChange={v => update(i, v)} pokemonList={pokemonList} />
+          <PokemonSlot key={i} value={name} onChange={v => update(i, v)} pokemonList={pokemonList} isManual={sources ? sources[i] : true} />
         ))}
       </div>
     </div>
