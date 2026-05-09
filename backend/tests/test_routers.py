@@ -57,6 +57,8 @@ async def test_recognize_returns_both_parties():
     assert "opponent_party" in data
     assert len(data["my_party"]["names"]) == 6
     assert len(data["opponent_party"]["names"]) == 6
+    assert len(data["my_party"]["confidences"]) == 6
+    assert len(data["opponent_party"]["confidences"]) == 6
 
 
 @pytest.mark.asyncio
