@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import cv2
 from infrastructure.external.image_recognition import ImageRecognizer
-from domain.repositories.image_recognizer import RecognitionResult, InvalidImageError
+from domain.repositories.image_recognizer import RecognitionResult, InvalidImageError, SelectionRecognitionResult
 
 
 @pytest.fixture
@@ -58,3 +58,27 @@ def test_recognize_from_bytes_raises_on_empty_bytes(sprites_dir):
     recognizer = ImageRecognizer(sprites_dir=sprites_dir)
     with pytest.raises(InvalidImageError):
         recognizer.recognize_from_bytes(b"")
+
+
+def test_recognize_selection_from_bytes_returns_both_parties(sprites_dir):
+    bg = np.zeros((400, 1000, 3), dtype=np.uint8)
+    charmander = cv2.imread(str(sprites_dir / "リザードン.png"))
+    blastoise = cv2.imread(str(sprites_dir / "カメックス.png"))
+    # 左リージョン（x=50 は 1000 の 5% < 40%）
+    bg[50:82, 50:82] = charmander
+    # 右リージョン（x=700 は 1000 の 70% > 65%）
+    bg[50:82, 700:732] = blastoise
+
+    recognizer = ImageRecognizer(sprites_dir=sprites_dir, top_n=1)
+    encoded = cv2.imencode(".png", bg)[1].tobytes()
+    result = recognizer.recognize_selection_from_bytes(encoded)
+
+    assert isinstance(result, SelectionRecognitionResult)
+    assert result.my_party.names[0] == "リザードン"
+    assert result.opponent_party.names[0] == "カメックス"
+
+
+def test_recognize_selection_from_bytes_raises_on_empty(sprites_dir):
+    recognizer = ImageRecognizer(sprites_dir=sprites_dir)
+    with pytest.raises(InvalidImageError):
+        recognizer.recognize_selection_from_bytes(b"")

@@ -33,27 +33,39 @@ async def test_create_party():
 
 
 @pytest.mark.asyncio
-async def test_recognize_returns_six_names():
-    mock_result = MagicMock()
-    mock_result.names = ["リザードン", "カメックス", "フシギバナ", "ピカチュウ", "ゲンガー", "カビゴン"]
-    mock_result.confidences = [0.9] * 6
+async def test_recognize_returns_both_parties():
+    my_result = MagicMock()
+    my_result.names = ["リザードン", "ゲッコウガ", "ルチャブル", "ゾロアーク", "ブラッキー", "ギルガルド"]
+    my_result.confidences = [0.9] * 6
+    opp_result = MagicMock()
+    opp_result.names = ["ガブリアス", "カイリュー", "ミミッキュ", "サーナイト", "ドリュウズ", "ハッサム"]
+    opp_result.confidences = [0.85] * 6
+    selection_result = MagicMock()
+    selection_result.my_party = my_result
+    selection_result.opponent_party = opp_result
 
     with patch("presentation.routers.recognition.recognizer") as mock_rec:
-        mock_rec.recognize.return_value = mock_result
+        mock_rec.recognize_selection.return_value = selection_result
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp = await client.post(
                 "/api/recognize",
                 files={"file": ("test.jpg", b"fake-image-data", "image/jpeg")},
             )
     assert resp.status_code == 200
-    assert len(resp.json()["names"]) == 6
+    data = resp.json()
+    assert "my_party" in data
+    assert "opponent_party" in data
+    assert len(data["my_party"]["names"]) == 6
+    assert len(data["opponent_party"]["names"]) == 6
+    assert len(data["my_party"]["confidences"]) == 6
+    assert len(data["opponent_party"]["confidences"]) == 6
 
 
 @pytest.mark.asyncio
 async def test_recognize_returns_400_on_invalid_image():
     from domain.repositories.image_recognizer import InvalidImageError
     with patch("presentation.routers.recognition.recognizer") as mock_rec:
-        mock_rec.recognize.side_effect = InvalidImageError("bad image")
+        mock_rec.recognize_selection.side_effect = InvalidImageError("bad image")
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp = await client.post(
                 "/api/recognize",
@@ -88,9 +100,11 @@ async def test_fetch_data_endpoint_returns_started():
 
 
 def test_do_fetch_handles_scraper_init_exception():
-    with patch("presentation.routers.data.GameWithScraper", side_effect=Exception("init error")):
-        from presentation.routers.data import _do_fetch
-        _do_fetch()
+    with patch("presentation.routers.data.ScrapePokemonListUseCase") as mock_uc_cls:
+        mock_uc_cls.return_value = MagicMock()
+        with patch("presentation.routers.data.GameWithScraper", side_effect=Exception("init error")):
+            from presentation.routers.data import _do_fetch
+            _do_fetch()
 
 
 def test_do_fetch_handles_scraper_exception():
@@ -273,9 +287,10 @@ async def test_predict_returns_400_when_api_key_not_set(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_data_status_dates_detail_structure():
+async def test_data_status_dates_detail_structure(tmp_path):
     from domain.entities.pokemon import UsageData, UsageEntry, PokemonList, PokemonInfo, BaseStats
-    import presentation.routers.data as rd
+    from infrastructure.persistence.json_usage_repository import JsonUsageRepository
+    from infrastructure.persistence.json_pokemon_list_repository import JsonPokemonListRepository
 
     entry = UsageEntry(
         name="ピカチュウ",
@@ -301,11 +316,15 @@ async def test_data_status_dates_detail_structure():
         ],
         mega_pokemons=[]
     )
-    rd._usage_repo.save_usage_data(usage)
-    rd._pokemon_list_repo.save_pokemon_list(plist)
+    tmp_usage_repo = JsonUsageRepository(data_dir=tmp_path)
+    tmp_pokemon_list_repo = JsonPokemonListRepository(data_dir=tmp_path)
+    tmp_usage_repo.save_usage_data(usage)
+    tmp_pokemon_list_repo.save_pokemon_list(plist)
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        resp = await client.get("/api/data/status")
+    with patch("presentation.routers.data._usage_repo", tmp_usage_repo), \
+         patch("presentation.routers.data._pokemon_list_repo", tmp_pokemon_list_repo):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get("/api/data/status")
 
     assert resp.status_code == 200
     data = resp.json()

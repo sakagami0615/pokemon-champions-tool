@@ -61,3 +61,24 @@ def test_execute_propagates_scraper_error() -> None:
     with pytest.raises(RuntimeError, match="Network error"):
         use_case.execute()
     repo.save_pokemon_list.assert_not_called()
+
+
+def test_execute_passes_callback_to_scraper():
+    mock_scraper = MagicMock()
+    mock_scraper.fetch_pokemon_list.return_value = ([], [])
+    mock_repo = MagicMock()
+    use_case = ScrapePokemonListUseCase(scraper=mock_scraper, repository=mock_repo)
+    callback = MagicMock()
+
+    use_case.execute(on_progress=callback)
+
+    mock_scraper.fetch_pokemon_list.assert_called_once_with(on_progress=callback)
+
+
+def test_execute_without_callback_does_not_raise():
+    mock_scraper = MagicMock()
+    mock_scraper.fetch_pokemon_list.return_value = ([], [])
+    mock_repo = MagicMock()
+    use_case = ScrapePokemonListUseCase(scraper=mock_scraper, repository=mock_repo)
+
+    use_case.execute()

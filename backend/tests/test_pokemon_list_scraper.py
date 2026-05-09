@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from bs4 import BeautifulSoup
 from domain.entities.pokemon import PokemonInfo
 from infrastructure.external.pokemon_list_scraper import PokemonListScraper
@@ -201,3 +201,44 @@ def test_fetch_pokemon_list_splits_normals_and_megas(scraper: PokemonListScraper
     assert len(mega_pokemons) == 1
     assert pokemons[0].name == "フシギバナ"
     assert mega_pokemons[0].name == "メガフシギバナ"
+
+
+def test_fetch_all_invokes_progress_callback(tmp_path):
+    scraper = PokemonListScraper(sprites_dir=tmp_path)
+    calls: list[tuple[int, str]] = []
+
+    def on_progress(progress: int, step: str) -> None:
+        calls.append((progress, step))
+
+    grouped = [
+        (1, "フシギダネ", "http://example.com/1", "001.png"),
+        (4, "ヒトカゲ", "http://example.com/4", "004.png"),
+    ]
+
+    with patch.object(scraper, '_fetch', return_value=MagicMock()), \
+         patch.object(scraper, '_parse_detail_page', return_value=MagicMock()):
+        scraper._fetch_all(
+            grouped,
+            on_progress=on_progress,
+            progress_start=5,
+            progress_end=45,
+            step_label="通常ポケモン",
+        )
+
+    # i=1, total=2: 5 + int(1/2 * 40) = 25
+    # i=2, total=2: 5 + int(2/2 * 40) = 45
+    assert calls == [
+        (25, "通常ポケモン取得中... (1/2)"),
+        (45, "通常ポケモン取得中... (2/2)"),
+    ]
+
+
+def test_fetch_all_without_callback_does_not_raise(tmp_path):
+    scraper = PokemonListScraper(sprites_dir=tmp_path)
+    grouped = [(1, "フシギダネ", "http://example.com/1", "001.png")]
+
+    with patch.object(scraper, '_fetch', return_value=MagicMock()), \
+         patch.object(scraper, '_parse_detail_page', return_value=MagicMock()):
+        result = scraper._fetch_all(grouped)
+
+    assert len(result) == 1

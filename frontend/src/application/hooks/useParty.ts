@@ -13,6 +13,7 @@ export interface UsePartyReturn {
   selectedPartyId: string | null
   myParty: string[]
   selectParty: (party: Party) => Promise<void>
+  clearSelectedParty: () => void
   createNewParty: (name: string, pokemon: string[]) => Promise<void>
   updateExistingParty: (id: string, name: string, pokemon: string[]) => Promise<void>
   removeParty: (id: string) => Promise<void>
@@ -51,6 +52,10 @@ export function useParty(): UsePartyReturn {
     await setLastUsedParty(party.id)
   }
 
+  const clearSelectedParty = () => {
+    setSelectedPartyId(null)
+  }
+
   const createNewParty = async (name: string, pokemon: string[]) => {
     await createParty(name, pokemon)
     reload()
@@ -71,6 +76,7 @@ export function useParty(): UsePartyReturn {
     selectedPartyId,
     myParty,
     selectParty,
+    clearSelectedParty,
     createNewParty,
     updateExistingParty,
     removeParty,

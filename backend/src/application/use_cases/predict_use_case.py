@@ -1,22 +1,15 @@
 import re
 from domain.entities.pokemon import UsageData
 from domain.entities.party import PredictionResult, PredictionPattern
+from domain.entities.prompt_config import PromptConfig
 from domain.repositories.llm_client import ILLMClient
-
-SYSTEM_PROMPT = """あなたはポケモンチャンピオンズの対戦分析AIです。
-与えられた情報をもとに、相手プレイヤーが選出しそうなポケモン3体のパターンを3つ予想してください。
-
-回答は必ず以下の形式で出力してください：
-パターン1: ポケモン名A, ポケモン名B, ポケモン名C
-パターン2: ポケモン名D, ポケモン名E, ポケモン名F
-パターン3: ポケモン名G, ポケモン名H, ポケモン名I
-
-可能性が高い順に並べてください。確率の数値は不要です。"""
+from domain.repositories.prompt_config_repository import IPromptConfigRepository
 
 
 class PredictUseCase:
-    def __init__(self, llm_client: ILLMClient) -> None:
+    def __init__(self, llm_client: ILLMClient, prompt_config_repo: IPromptConfigRepository) -> None:
         self._client = llm_client
+        self._prompt_config_repo = prompt_config_repo
 
     def predict(
         self,
@@ -24,8 +17,9 @@ class PredictUseCase:
         my_party: list[str],
         usage_data: UsageData,
     ) -> PredictionResult:
-        prompt = self._build_prompt(opponent_party, my_party, usage_data)
-        text = self._client.generate(SYSTEM_PROMPT, prompt)
+        config = self._prompt_config_repo.get_config()
+        prompt = self._build_prompt(opponent_party, my_party, usage_data, config)
+        text = self._client.generate(config.system_prompt, prompt)
         return self._parse_response(text)
 
     def _build_prompt(
@@ -33,6 +27,7 @@ class PredictUseCase:
         opponent_party: list[str],
         my_party: list[str],
         usage_data: UsageData,
+        prompt_config: PromptConfig,
     ) -> str:
         usage_summary = []
         for entry in usage_data.pokemons:
@@ -43,16 +38,11 @@ class PredictUseCase:
 
         usage_text = "\n".join(usage_summary) if usage_summary else "使用率データなし"
 
-        return f"""【相手パーティ（6体）】
-{", ".join(opponent_party)}
-
-【自分のパーティ（6体）】
-{", ".join(my_party)}
-
-【相手パーティの使用率データ】
-{usage_text}
-
-シングルバトル3体選出です。相手が選出しそうな3体のパターンを3つ予想してください。"""
+        return prompt_config.user_prompt_template.format(
+            opponent_party=", ".join(opponent_party),
+            my_party=", ".join(my_party),
+            usage_text=usage_text,
+        )
 
     def _parse_response(self, text: str) -> PredictionResult:
         patterns = []

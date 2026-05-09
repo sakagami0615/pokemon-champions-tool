@@ -13,6 +13,7 @@ dependencies = [
     "beautifulsoup4==4.12.3",
     "anthropic>=0.40.0",
     "litellm>=1.0.0",
+    "pyyaml>=6.0",
 ]
 
 [dependency-groups]

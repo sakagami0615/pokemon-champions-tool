@@ -5,9 +5,10 @@ interface Props {
   value: string
   onChange: (name: string) => void
   pokemonList: PokemonListEntry[]
+  isManual?: boolean
 }
 
-export default function PokemonSlot({ value, onChange, pokemonList }: Props) {
+export default function PokemonSlot({ value, onChange, pokemonList, isManual = true }: Props) {
   const [editing, setEditing] = useState(false)
   const selectRef = useRef<HTMLSelectElement>(null)
 
@@ -19,9 +20,12 @@ export default function PokemonSlot({ value, onChange, pokemonList }: Props) {
 
   if (value && !editing) {
     const spriteSrc = pokemonList.find((p) => p.name === value)?.sprite_path
+    const borderStyle = isManual
+      ? 'border-green-400 bg-green-50 dark:bg-green-900/30'
+      : 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30'
     return (
       <div
-        className="flex flex-col items-center gap-1 p-2 rounded-lg border-2 border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 cursor-pointer"
+        className={`flex flex-col items-center gap-1 p-2 rounded-lg border-2 ${borderStyle} cursor-pointer`}
         onClick={() => setEditing(true)}
         title="クリックで変更"
       >

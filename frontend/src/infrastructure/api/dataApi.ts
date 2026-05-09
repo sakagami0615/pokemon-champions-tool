@@ -14,6 +14,9 @@ export interface DateDetail {
 
 export interface DataStatus {
   scraping_in_progress: boolean
+  scraping_progress: number
+  scraping_step: string
+  last_scraped_at: string | null
   selected_date: string | null
   available_dates: string[]
   dates_detail: DateDetail[]

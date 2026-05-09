@@ -12,6 +12,15 @@ class RecognitionResult:
     confidences: list[float]
 
 
+@dataclass
+class SelectionRecognitionResult:
+    my_party: RecognitionResult
+    opponent_party: RecognitionResult
+
+
 class IImageRecognizer(ABC):
     @abstractmethod
     def recognize_from_bytes(self, image_bytes: bytes) -> RecognitionResult: ...
+
+    @abstractmethod
+    def recognize_selection_from_bytes(self, image_bytes: bytes) -> SelectionRecognitionResult: ...

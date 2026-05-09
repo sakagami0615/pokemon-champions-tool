@@ -13,7 +13,10 @@ recognizer = RecognitionUseCase(recognizer=ImageRecognizer(sprites_dir=_sprites_
 async def recognize(file: UploadFile = File(...)):
     image_bytes = await file.read()
     try:
-        result = recognizer.recognize(image_bytes)
+        result = recognizer.recognize_selection(image_bytes)
     except InvalidImageError:
         raise HTTPException(status_code=400, detail="無効な画像ファイルです。PNG または JPEG 形式の画像をアップロードしてください。")
-    return {"names": result.names, "confidences": result.confidences}
+    return {
+        "my_party": {"names": result.my_party.names, "confidences": result.my_party.confidences},
+        "opponent_party": {"names": result.opponent_party.names, "confidences": result.opponent_party.confidences},
+    }

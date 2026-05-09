@@ -4,6 +4,7 @@ import { useLLMConfig } from '../../application/hooks/useLLMConfig'
 import DataCardList from '../components/DataCardList'
 import PokemonPanelGrid from '../components/PokemonPanelGrid'
 import ModelSettings from '../components/ModelSettings'
+import ScrapeProgressBar from '../components/ScrapeProgressBar'
 
 type DataTab = 'dates' | 'pokemons'
 
@@ -12,7 +13,6 @@ export default function SettingsPage() {
     status,
     pokemonList,
     isFetching,
-    fetchMessage,
     error: dataError,
     triggerFetch,
     handleSelectDate,
@@ -71,7 +71,7 @@ export default function SettingsPage() {
         <h1 className="text-xl font-bold">データ管理</h1>
 
         <div className="space-y-2">
-          <div className="flex items-center gap-4">
+          <div className="space-y-2">
             <button
               onClick={triggerFetch}
               disabled={isFetching}
@@ -80,12 +80,12 @@ export default function SettingsPage() {
               {isFetching ? '開始中...' : 'データ取得'}
             </button>
             {status?.scraping_in_progress && (
-              <p className="text-sm text-yellow-500 animate-pulse">
-                スクレイピング実行中...
-              </p>
+              <ScrapeProgressBar
+                progress={status.scraping_progress}
+                step={status.scraping_step}
+              />
             )}
           </div>
-          {fetchMessage && <p className="text-sm text-green-600">{fetchMessage}</p>}
           {dataError && <p className="text-sm text-red-500">{dataError}</p>}
         </div>
 

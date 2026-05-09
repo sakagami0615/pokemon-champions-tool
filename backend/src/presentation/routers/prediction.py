@@ -1,14 +1,17 @@
+from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from application.use_cases.predict_use_case import PredictUseCase
 from infrastructure.persistence.json_usage_repository import JsonUsageRepository
 from infrastructure.persistence.json_llm_config_repository import JsonLLMConfigRepository
+from infrastructure.persistence.yaml_prompt_config_repository import YamlPromptConfigRepository
 from infrastructure.external.litellm_client import LiteLLMClient
 import application.state.scraping_state as _state
 
 router = APIRouter(prefix="/api", tags=["prediction"])
 _usage_repo = JsonUsageRepository()
 _llm_config_repo = JsonLLMConfigRepository()
+_prompt_config_repo = YamlPromptConfigRepository(Path(__file__).parent.parent.parent.parent / "config" / "prompts.yaml")
 
 
 class PredictRequest(BaseModel):
@@ -44,7 +47,7 @@ def predict(req: PredictRequest):
         )
 
     llm_client = LiteLLMClient(config)
-    use_case = PredictUseCase(llm_client=llm_client)
+    use_case = PredictUseCase(llm_client=llm_client, prompt_config_repo=_prompt_config_repo)
     return use_case.predict(
         opponent_party=req.opponent_party,
         my_party=req.my_party,

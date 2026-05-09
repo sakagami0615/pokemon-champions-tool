@@ -12,6 +12,7 @@ RUN uv pip install --system . && uv pip install --system --group dev .
 COPY src/ ./src/
 COPY tests/ ./tests/
 COPY data/ ./data/
+COPY config/ ./config/
 
 EXPOSE 8000
 

@@ -1,29 +1,34 @@
 import { useRef } from 'react'
 import PokemonSlot from './PokemonSlot'
 import type { PokemonListEntry } from '../../domain/entities/pokemon'
+import type { RecognizedParties } from '../../application/hooks/useRecognition'
 
 interface Props {
   party: string[]
   onChange: (party: string[]) => void
   pokemonList: PokemonListEntry[]
-  onImageUpload: (file: File) => Promise<string[]>
+  label?: string
+  onImageUpload?: (file: File) => Promise<RecognizedParties>
+  sources?: boolean[]
+  onMarkManual?: (index: number) => void
 }
 
-export default function PartyInput({ party, onChange, pokemonList, onImageUpload }: Props) {
+export default function PartyInput({ party, onChange, pokemonList, label, onImageUpload, sources, onMarkManual }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const update = (index: number, name: string) => {
     const next = [...party]
     next[index] = name
     onChange(next)
+    onMarkManual?.(index)
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file || !onImageUpload) return
     try {
-      const names = await onImageUpload(file)
-      onChange(names)
+      const result = await onImageUpload(file)
+      onChange(result.opponentParty)
     } catch (err) {
       alert(`画像認識に失敗しました: ${err}`)
     } finally {
@@ -33,19 +38,25 @@ export default function PartyInput({ party, onChange, pokemonList, onImageUpload
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">相手パーティ</h2>
-        <button
-          onClick={() => fileRef.current?.click()}
-          className="text-xs px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
-        >
-          画像から入力
-        </button>
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-      </div>
+      {(label || onImageUpload) && (
+        <div className="flex items-center justify-between">
+          {label && <h2 className="font-bold text-sm text-gray-600 dark:text-gray-400">{label}</h2>}
+          {onImageUpload && (
+            <>
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="text-xs px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+              >
+                画像から入力
+              </button>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+            </>
+          )}
+        </div>
+      )}
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {party.map((name, i) => (
-          <PokemonSlot key={i} value={name} onChange={v => update(i, v)} pokemonList={pokemonList} />
+          <PokemonSlot key={i} value={name} onChange={v => update(i, v)} pokemonList={pokemonList} isManual={sources ? sources[i] : true} />
         ))}
       </div>
     </div>

@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { toast } from 'sonner'
 import { fetchData, getDataStatus, selectDate, getPokemonList, DataStatus } from '../../infrastructure/api/dataApi'
 import type { PokemonListEntry } from '../../domain/entities/pokemon'
+
+const LS_SCRAPING_PENDING = 'scraping_pending'
+const LS_LAST_NOTIFIED_AT = 'last_notified_at'
 
 interface UseDataManagementReturn {
   status: DataStatus | null
   pokemonList: PokemonListEntry[]
   isFetching: boolean
-  fetchMessage: string | null
   error: string | null
   triggerFetch: () => Promise<void>
   handleSelectDate: (date: string) => Promise<void>
@@ -16,16 +19,29 @@ export function useDataManagement(): UseDataManagementReturn {
   const [status, setStatus] = useState<DataStatus | null>(null)
   const [pokemonList, setPokemonList] = useState<PokemonListEntry[]>([])
   const [isFetching, setIsFetching] = useState(false)
-  const [fetchMessage, setFetchMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const wasScrapingRef = useRef(false)
 
-  const loadStatus = useCallback(async () => {
+  const maybeNotify = useCallback((s: DataStatus) => {
+    if (
+      localStorage.getItem(LS_SCRAPING_PENDING) === 'true' &&
+      s.last_scraped_at !== null &&
+      s.last_scraped_at !== localStorage.getItem(LS_LAST_NOTIFIED_AT)
+    ) {
+      toast.success('データ取得が完了しました')
+      localStorage.setItem(LS_LAST_NOTIFIED_AT, s.last_scraped_at)
+      localStorage.removeItem(LS_SCRAPING_PENDING)
+    }
+  }, [])
+
+  const loadStatus = useCallback(async (): Promise<DataStatus | null> => {
     try {
       const s = await getDataStatus()
       setStatus(s)
+      return s
     } catch {
+      return null
     }
   }, [])
 
@@ -38,9 +54,15 @@ export function useDataManagement(): UseDataManagementReturn {
   }, [])
 
   useEffect(() => {
-    loadStatus()
+    const init = async () => {
+      const s = await loadStatus()
+      if (s && !s.scraping_in_progress) {
+        maybeNotify(s)
+      }
+    }
+    init()
     loadPokemonList()
-  }, [loadStatus, loadPokemonList])
+  }, [loadStatus, loadPokemonList, maybeNotify])
 
   useEffect(() => {
     if (status?.scraping_in_progress) {
@@ -53,6 +75,9 @@ export function useDataManagement(): UseDataManagementReturn {
       }
       if (wasScrapingRef.current) {
         wasScrapingRef.current = false
+        if (status) {
+          maybeNotify(status)
+        }
         loadPokemonList()
       }
     }
@@ -62,15 +87,14 @@ export function useDataManagement(): UseDataManagementReturn {
         pollingRef.current = null
       }
     }
-  }, [status?.scraping_in_progress, loadStatus, loadPokemonList])
+  }, [status?.scraping_in_progress, status, loadStatus, loadPokemonList, maybeNotify])
 
   const triggerFetch = useCallback(async () => {
     setIsFetching(true)
     setError(null)
-    setFetchMessage(null)
     try {
       await fetchData()
-      setFetchMessage('データ取得を開始しました')
+      localStorage.setItem(LS_SCRAPING_PENDING, 'true')
       await loadStatus()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'データ取得の開始に失敗しました')
@@ -92,5 +116,5 @@ export function useDataManagement(): UseDataManagementReturn {
     }
   }, [status?.selected_date, loadPokemonList])
 
-  return { status, pokemonList, isFetching, fetchMessage, error, triggerFetch, handleSelectDate }
+  return { status, pokemonList, isFetching, error, triggerFetch, handleSelectDate }
 }
